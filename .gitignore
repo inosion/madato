@@ -6,9 +6,9 @@
 **/*.rs.bk
 Cargo.lock
 
-www-sample/markdown_table_maker_bg.wasm
-www-sample/markdown_table_maker.js
-www-sample/markdown_table_maker.d.ts
+www-sample/markdown_tools_bg.wasm
+www-sample/markdown_tools.js
+www-sample/markdown_tools.d.ts
 
 npm-debug.log
 

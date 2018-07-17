@@ -1,6 +1,8 @@
 ## Rust Questions
 
-Given a simple expression of a map from Collection<X> to Collection<Y> , how can you have the compiler tell you the type ?
+Q: Given a simple expression of a map from Collection<X> to Collection<Y> , how can you have the compiler tell you the type ?
+A: assign it to an invalid type .. eg `let x:u32 = data.map().my_complex_transformation().collect().something()`
+  and the compiler will complain. 
 
 ## Excellent Rust Posts 
 
@@ -17,8 +19,6 @@ Given a simple expression of a map from Collection<X> to Collection<Y> , how can
   http://xion.io/post/code/rust-little-crates.html
 
   https://beachape.com/blog/2017/05/24/rust-from-scala/
-
-* 
 
 ## Running the Node Sample
 ```

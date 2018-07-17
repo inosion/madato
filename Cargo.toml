@@ -3,7 +3,6 @@ name = "markdown-tools"
 version = "0.1.0"
 authors = ["Ramon Buckland <ramon.buckland@inosion.com>"]
 
-
 [lib]
 crate-type = ["cdylib"]
 

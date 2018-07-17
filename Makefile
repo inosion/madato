@@ -1,5 +1,5 @@
-wasm_compiled = www-sample/markdown_table_maker_bg.wasm www-sample/markdown_table_maker.d.ts www-sample/markdown_table_maker.js
-wasm_debug    = target/wasm32-unknown-unknown/debug/markdown_table_maker.wasm
+wasm_compiled = www-sample/markdown_tools.wasm www-sample/markdown_tools.d.ts www-sample/markdown_tools.js
+wasm_debug    = target/wasm32-unknown-unknown/debug/markdown_tools.wasm
 
 $(wasm_debug):
 	cargo +nightly build --target wasm32-unknown-unknown

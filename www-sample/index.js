@@ -1,4 +1,4 @@
-const mtm = import("./markdown_table_maker");
+const mtm = import("./markdown_tools");
 const yaml = require('js-yaml');
 const md = require('markdown-it')();
 
