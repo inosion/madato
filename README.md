@@ -55,11 +55,11 @@ And as Markdown:
 
 ### Features
 
-[x] Reads a formatted YAML string and renders a Markdown Table
-[x] Can take an optional list of column headings, and only display those from the table (filtering out other columns present)
-[ ] Native Binary Command Line (windows, linux, osx)
-[ ] Read an XLSX file and ptroduce a Markdown Table
-[ ] Read a CSV, TSV, PSV (etc) file and produce a Markdown Table
-[ ] Support Nested Structures in the YAML imput
+* `[x]` Reads a formatted YAML string and renders a Markdown Table
+* `[x]` Can take an optional list of column headings, and only display those from the table (filtering out other columns present)
+* `[ ]` Native Binary Command Line (windows, linux, osx)
+* `[ ]` Read an XLSX file and ptroduce a Markdown Table
+* `[ ]` Read a CSV, TSV, PSV (etc) file and produce a Markdown Table
+* `[ ]` Support Nested Structures in the YAML imput
 
 
