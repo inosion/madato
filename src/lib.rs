@@ -1,4 +1,4 @@
-#![feature(use_extern_macros, wasm_custom_section, wasm_import_module, iterator_flatten)]
+#![feature(use_extern_macros, wasm_custom_section, wasm_import_module, iterator_flatten, slice_patterns)]
 
 extern crate calamine;
 extern crate indexmap;
@@ -8,64 +8,14 @@ extern crate wasm_bindgen;
 pub mod excel;
 pub mod types;
 
+#[macro_use]
+mod utils;
+
 use indexmap::IndexSet;
 use std::cmp;
-use std::collections::BTreeMap;
 use types::*;
 use wasm_bindgen::prelude::*;
-
-#[allow(unused_macros)]
-macro_rules! s {
-    ($s:expr) => {
-        String::from($s)
-    };
-}
-
-#[allow(unused_macros)]
-macro_rules! hashmap {
-    ($( $key: expr => $val: expr ),*) => {{
-         let mut map = ::std::collections::HashMap::new();
-         $( map.insert($key, $val); )*
-         map
-    }}
-}
-
-#[allow(unused_macros)]
-macro_rules! treemap {
-    ($( $key: expr => $val: expr ),*) => {{
-         let mut map = ::std::collections::BTreeMap::new();
-         $( map.insert($key, $val); )*
-         map
-    }}
-}
-
-#[allow(unused_macros)]
-macro_rules! indexset {
-    ($( $key: expr ),*) => {{
-         let mut map = ::indexmap::IndexSet::new();
-         $( map.insert($key); )*
-         map
-    }}
-}
-
-/*
- * https://gist.github.com/kardeiz/26c303957fc298212c3623c01a26f38c
- */
-pub trait StripMargin {
-    fn strip_margin(self) -> String;
-}
-
-impl StripMargin for &'static str {
-    fn strip_margin(self) -> String {
-        let mut out = Vec::new();
-        for l in self.lines().filter(|x| !x.is_empty()) {
-            for s in l.splitn(2, '|').nth(1) {
-                out.push(s);
-            }
-        }
-        out.join("\n")
-    }
-}
+use utils::*;
 
 #[test]
 fn can_extract_headers() {
