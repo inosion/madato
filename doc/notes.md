@@ -20,6 +20,10 @@ A: assign it to an invalid type .. eg `let x:u32 = data.map().my_complex_transfo
 
   https://beachape.com/blog/2017/05/24/rust-from-scala/
 
+## WASM Items
+
+* https://github.com/rustwasm/wasm-pack - publishing to npm registry
+
 ## Running the Node Sample
 ```
  make all # to build the WASM components 

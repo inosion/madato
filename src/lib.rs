@@ -1,13 +1,25 @@
 #![feature(use_extern_macros, wasm_custom_section, wasm_import_module, iterator_flatten)]
 
+extern crate calamine;
 extern crate indexmap;
 extern crate serde_yaml;
 extern crate wasm_bindgen;
 
+pub mod excel;
+pub mod types;
+
 use indexmap::IndexSet;
 use std::cmp;
 use std::collections::BTreeMap;
+use types::*;
 use wasm_bindgen::prelude::*;
+
+#[allow(unused_macros)]
+macro_rules! s {
+    ($s:expr) => {
+        String::from($s)
+    };
+}
 
 #[allow(unused_macros)]
 macro_rules! hashmap {
@@ -58,23 +70,23 @@ impl StripMargin for &'static str {
 #[test]
 fn can_extract_headers() {
     let hdrs = vec![
-        treemap!["foo" => "ggg", "bar" => "fred", "nop" => "no"], // foo bar nop
-        treemap!["foo" => "seventy", "bar" => "barry", "nop" => "no", "aaa" => "ddd"], //
-        treemap!["bar" => "col has no foo", "fff" => "ffsd"],
+        treemap![s!("foo") => s!("ggg"), s!("bar") => s!("fred"), s!("nop") => s!("no")], // foo bar nop
+        treemap![s!("foo") => s!("seventy"), s!("bar") => s!("barry"), s!("nop") => s!("no"), s!("aaa") => s!("ddd")], //
+        treemap![s!("bar") => s!("col has no foo"), s!("fff") => s!("ffsd")],
     ];
 
-    let expected = indexset!["bar", "foo", "nop", "aaa", "fff"];
+    let expected = indexset![s!("bar"), s!("foo"), s!("nop"), s!("aaa"), s!("fff")];
     let result = collect_headers(&hdrs);
     assert!(expected == result);
 }
 
-pub fn collect_headers<'a>(data: &[BTreeMap<&'a str, &str>]) -> IndexSet<&'a str> {
+pub fn collect_headers(data: &[TableRow<String, String>]) -> IndexSet<String> {
     data.iter().flat_map(|hm| hm.keys().cloned()).collect()
 }
 
 #[test]
 fn can_mk_header() {
-    let hdr = mk_header(&vec![("bard", 5), ("other", 8)]);
+    let hdr = mk_header(&vec![(s!("bard"), 5), (s!("other"), 8)]);
 
     // the | below is the margin
     let expected = "
@@ -90,7 +102,7 @@ fn can_mk_header() {
 ///
 /// `headings` - vector of headings (column titles over the table)
 ///
-pub fn mk_header(heading_data: &[(&str, usize)]) -> String {
+pub fn mk_header(heading_data: &[(String, usize)]) -> String {
     let heading: String = heading_data.iter().fold(String::from("|"), |res, h| {
         format!("{}{: ^width$}|", res, h.0, width = h.1)
     });
@@ -104,11 +116,11 @@ pub fn mk_header(heading_data: &[(&str, usize)]) -> String {
 #[test]
 fn can_mk_data() {
     let tbl_md = mk_data(
-        &vec![("foo", 5), ("bar", 8)],
+        &vec![(s!("foo"), 5), (s!("bar"), 8)],
         &vec![
-            treemap!["foo" => "ggg", "bar" => "fred", "nop" => "no"],
-            treemap!["foo" => "seventy", "bar" => "barry", "nop" => "no"],
-            treemap!["bar" => "col has no foo"],
+            treemap![s!("foo") => s!("ggg"), s!("bar") => s!("fred"), s!("nop") => s!("no")],
+            treemap![s!("foo") => s!("seventy"), s!("bar") => s!("barry"), s!("nop") => s!("no")],
+            treemap![s!("bar") => s!("col has no foo")],
         ],
     );
 
@@ -119,15 +131,17 @@ fn can_mk_data() {
    ||     |col has no foo|"
         .strip_margin();
 
+    println!("{}\n{}", tbl_md, expected);
+
     assert!(tbl_md == expected);
 }
 
-/// Takes an ordered list of tuples; (key, column_width) and a Vector of BTreeMaps, the cell values
-/// The BTreeMap could carry more data than the keys provided. That is, only hm.get(key) will appear in the output.
+/// Takes an ordered list of tuples; (key, column_width) and a Vector of TableRows, the cell values
+/// The TableRow could carry more data than the keys provided. That is, only hm.get(key) will appear in the output.
 ///
 /// returns a string of rows; `\n` separated in the form
 ///
-/// ```
+/// ```text
 /// | val1 | val3 | val4 | val5 |
 /// ...
 /// | val1 | val3 | val4 | val5 |
@@ -136,18 +150,14 @@ fn can_mk_data() {
 /// # Arguments
 ///
 /// `keys` - for the treemaps. keys determine cell order in a row
-/// `data` - Vector of BTreeMaps
+/// `data` - Vector of TableRows
 ///
-pub fn mk_data<T: ToString + ?Sized>(
-    heading_data: &[(&str, usize)],
-    data: &[BTreeMap<&str, &T>],
-) -> String {
+pub fn mk_data(heading_data: &[(String, usize)], data: &[TableRow<String, String>]) -> String {
     let ret: Vec<String> = data
         .iter()
         .map(|hm| {
-            let h: &BTreeMap<&str, &T> = hm;
             let m = heading_data.iter().fold(String::from("|"), |res, k| {
-                let s = match h.get(k.0) {
+                let s = match hm.get(&k.0) {
                     Some(x) => x.to_string(),
                     None => "".into(),
                 };
@@ -165,11 +175,11 @@ pub fn mk_data<T: ToString + ?Sized>(
 #[test]
 fn can_make_table() {
     let tbl_md = mk_table(
-        &vec!["foo", "bar"],
+        &vec![s!("foo"), s!("bar")],
         &vec![
-            treemap!["foo" => "ggg", "bar" => "fred", "nop" => "no"],
-            treemap!["foo" => "seventy", "bar" => "barry", "nop" => "no"],
-            treemap!["bar" => "col has no foo"],
+            treemap![s!("foo") => s!("ggg"), s!("bar") => s!("fred"), s!("nop") => s!("no")],
+            treemap![s!("foo") => s!("seventy"), s!("bar") => s!("barry"), s!("nop") => s!("no")],
+            treemap![s!("bar") => s!("col has no foo")],
         ],
     );
 
@@ -185,22 +195,22 @@ fn can_make_table() {
     assert!(tbl_md == expected);
 }
 
-/// Takes an ordered list of headings and a Vector of BTreeMaps, the cell values
+/// Takes an ordered list of headings and a Vector of TableRows, the cell values
 /// and produces a formatted Markdown Table.
 ///
 /// # Arguments
 ///
 /// `headings` - Which values, in that order, to use as the table output
-/// `data`     - Vector of BTreeMaps
+/// `data`     - Vector of TableRows
 ///
-pub fn mk_table<T: ToString + ?Sized>(headings: &[&str], data: &[BTreeMap<&str, &T>]) -> String {
+pub fn mk_table(headings: &[String], data: &[TableRow<String, String>]) -> String {
     // for each heading, find the "widest" heading, or value
 
-    let heading_data: Vec<(&str, usize)> = headings
+    let heading_data: Vec<(String, usize)> = headings
         .iter()
         .map(|h| {
             (
-                *h,
+                h.clone(),
                 data.iter().fold(h.len(), | max, hm |  // how to return a 
                                    cmp::max(max,
                                      match hm.get(h)  {
@@ -210,7 +220,7 @@ pub fn mk_table<T: ToString + ?Sized>(headings: &[&str], data: &[BTreeMap<&str, 
                                     )),
             )
         })
-        .collect::<Vec<(&str, usize)>>();
+        .collect::<Vec<(String, usize)>>();
 
     format!(
         "{}\n{}",
@@ -222,9 +232,9 @@ pub fn mk_table<T: ToString + ?Sized>(headings: &[&str], data: &[BTreeMap<&str, 
 #[test]
 fn can_make_table_all_cols() {
     let tbl_md = mk_table_all_cols(&vec![
-        treemap!["foo" => "ggg", "bar" => "fred", "nop" => "no"],
-        treemap!["foo" => "seventy", "bar" => "barry", "nop" => "no"],
-        treemap!["bar" => "col has no foo"],
+        treemap![s!("foo") => s!("ggg"), s!("bar") => s!("fred"), s!("nop") => s!("no")],
+        treemap![s!("foo") => s!("seventy"), s!("bar") => s!("barry"), s!("nop") => s!("no")],
+        treemap![s!("bar") => s!("col has no foo")],
     ]);
 
     // the | below is the margin
@@ -239,15 +249,15 @@ fn can_make_table_all_cols() {
     assert!(tbl_md == expected);
 }
 
-/// Takes a Vector of BTreeMaps, and prints a Markdown Table
+/// Takes a Vector of TableRows, and prints a Markdown Table
 /// and produces a formatted Markdown Table.
 ///
 /// # Arguments
 ///
-/// `data`     - Vector of BTreeMaps
+/// `data`     - Vector of TableRows
 ///
-pub fn mk_table_all_cols(data: &[BTreeMap<&str, &str>]) -> String {
-    let keys: Vec<&str> = collect_headers(data).into_iter().collect();
+pub fn mk_table_all_cols(data: &[TableRow<String, String>]) -> String {
+    let keys: Vec<String> = collect_headers(data).into_iter().collect();
 
     mk_table(&keys, data)
 }
@@ -278,12 +288,13 @@ fn can_yaml_to_md() {
     ||100 | ta da |  this   |someother value here|"
         .strip_margin();
 
-    let tbl_md = mk_md_table_from_yaml(&yml_data);
+    let tbl_md = mk_md_table_from_yaml(yml_data);
     assert!(tbl_md == expected);
 }
 
 /// Takes a String of YAML. An Array of Maps, 1 Level deep, and returns a Markdown Table
-/// ```
+///
+/// ```text
 /// - data1: somevalue
 ///   data2: someother value here
 ///   col3: 100
@@ -299,7 +310,7 @@ fn can_yaml_to_md() {
 ///
 /// gives
 ///
-/// ```
+/// ```text
 /// |col3| col4  |  data1  |       data2        |
 /// |----|-------|---------|--------------------|
 /// |100 |gar gar|somevalue|someother value here|
@@ -308,19 +319,9 @@ fn can_yaml_to_md() {
 /// ```
 ///
 #[wasm_bindgen]
-pub fn mk_md_table_from_yaml(yaml: &str) -> String {
-    let deserialized_map: Vec<BTreeMap<String, String>> = serde_yaml::from_str(&yaml).unwrap();
-    let str_btm = deserialized_map
-        .iter()
-        .map(|btree| {
-            btree
-                .iter()
-                .map(|(x, y)| (x.as_str(), y.as_str()))
-                .collect::<BTreeMap<&str, &str>>()
-        })
-        .collect::<Vec<_>>();
-
-    mk_table_all_cols(&str_btm)
+pub fn mk_md_table_from_yaml(yaml: String) -> String {
+    let deserialized_map: Table<String, String> = serde_yaml::from_str(&yaml).unwrap();
+    mk_table_all_cols(&deserialized_map)
 }
 
 #[test]
@@ -339,7 +340,7 @@ fn can_yaml_to_md_with_headings() {
     |  col4: ta da
     |"
         .strip_margin();
-    let headings = vec!["data1", "data2", "col4"];
+    let headings = vec![s!("data1"), s!("data2"), s!("col4")];
 
     // the | below is the margin
     let expected = "
@@ -350,26 +351,19 @@ fn can_yaml_to_md_with_headings() {
     ||  this   |someother value here| ta da |"
         .strip_margin();
 
-    let tbl_md = mk_md_table_from_yaml_with_headings(&headings, &yml_data);
+    let tbl_md = mk_md_table_from_yaml_with_headings(&headings, yml_data);
     assert!(tbl_md == expected);
 }
 
 #[wasm_bindgen]
-pub fn mk_md_table_from_yaml_with_headings_list(headings: &str, yaml: &str) -> String {
-    mk_md_table_from_yaml_with_headings(&headings.split(",").collect::<Vec<_>>(), &yaml)
+pub fn mk_md_table_from_yaml_with_headings_list(headings: String, yaml: String) -> String {
+    mk_md_table_from_yaml_with_headings(
+        &headings.split(",").map(String::from).collect::<Vec<_>>(),
+        yaml,
+    )
 }
 
-pub fn mk_md_table_from_yaml_with_headings(headings: &[&str], yaml: &str) -> String {
-    let deserialized_map: Vec<BTreeMap<String, String>> = serde_yaml::from_str(&yaml).unwrap();
-    let str_btm = deserialized_map
-        .iter()
-        .map(|btree| {
-            btree
-                .iter()
-                .map(|(x, y)| (x.as_str(), y.as_str()))
-                .collect::<BTreeMap<&str, &str>>()
-        })
-        .collect::<Vec<_>>();
-
-    mk_table(&headings, &str_btm)
+pub fn mk_md_table_from_yaml_with_headings(headings: &[String], yaml: String) -> String {
+    let deserialized_map: Table<String, String> = serde_yaml::from_str(&yaml).unwrap();
+    mk_table(&headings, &deserialized_map)
 }
