@@ -34,3 +34,5 @@ npm run serve
 ## travis CI 
 
 - https://dev.to/cad97/great-rust-ci-1fk6
+- https://github.com/japaric/rust-cross
+- https://rwalk.xyz/rust-cross-compiling-from-ubuntu-to-os-x/
