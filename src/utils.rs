@@ -1,6 +1,4 @@
-
 #[macro_use]
-
 #[allow(unused_macros)]
 macro_rules! s {
     ($s:expr) => {
@@ -47,7 +45,6 @@ macro_rules! indexset {
     }}
 }
 
-
 /*
  * https://gist.github.com/kardeiz/26c303957fc298212c3623c01a26f38c
  */
@@ -59,7 +56,7 @@ impl StripMargin for &'static str {
     fn strip_margin(self) -> String {
         let mut out = Vec::new();
         for l in self.lines().filter(|x| !x.is_empty()) {
-            for s in l.splitn(2, '|').nth(1) {
+            if let Some(s) = l.splitn(2, '|').nth(1) {
                 out.push(s);
             }
         }

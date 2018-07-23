@@ -1,48 +1,55 @@
 #![feature(slice_patterns)]
 
-use calamine::{open_workbook_auto, DataType, Range, Reader, Sheets, Xlsx};
+use calamine::{open_workbook_auto, DataType, Reader};
 
 use mk_table_all_cols;
 use types::{Table, TableRow};
 
-
-fn table_formatter(table: Result<(String, Table<String, String>), (String,String)>, print_name: bool) -> String {
+fn table_formatter(
+    table: Result<(String, Table<String, String>), (String, String)>,
+    print_name: bool,
+) -> String {
     match table {
-        Err((name, error))     => format!("Sheet `{}` errored: {}", name, error),
-        Ok((name, table_data)) => { 
+        Err((name, error)) => format!("Sheet `{}` errored: {}", name, error),
+        Ok((name, table_data)) => {
             if print_name {
                 format!("**{}**\n{}", name, mk_table_all_cols(&table_data))
             } else {
                 mk_table_all_cols(&table_data)
             }
-            
         }
     }
 }
 
 pub fn spreadsheet_to_md(filename: String) -> Result<String, String> {
-    
     let results = read_excel(filename);
     if results.len() <= 1 {
         Ok(table_formatter(results[0].clone(), false))
     } else {
-       Ok(results.iter().map(|table_result| table_formatter(table_result.clone(), true)).collect::<Vec<String>>().join("\n\n"))
+        Ok(results
+            .iter()
+            .map(|table_result| table_formatter(table_result.clone(), true))
+            .collect::<Vec<String>>()
+            .join("\n\n"))
     }
 }
 
-pub fn read_excel(filename: String) -> Vec<Result<(String, Table<String, String>), (String, String)>> {
+pub fn read_excel(
+    filename: String,
+) -> Vec<Result<(String, Table<String, String>), (String, String)>> {
     // opens a new workbook
     let mut workbook = open_workbook_auto(filename).expect("Cannot open file");
 
     let sheet_names = workbook.sheet_names().to_owned();
 
-    let sheets: Vec<Result<(String,Table<String, String>), (String, String)>> =
-        sheet_names.iter().map(|name| {
+    let sheets: Vec<Result<(String, Table<String, String>), (String, String)>> = sheet_names
+        .iter()
+        .map(|name| {
             let maybe_sheet = workbook.worksheet_range(name);
             match maybe_sheet {
                 None => Err((name.clone(), format!("sheet {} is empty", name))),
                 Some(Err(err)) => Err((name.clone(), format!("{}", err))),
-                Some(Ok(sheet)) => Ok((name.clone(),{
+                Some(Ok(sheet)) => Ok((name.clone(), {
                     let first_row: Vec<(usize, String)> = sheet
                         .rows()
                         .next()
@@ -67,11 +74,12 @@ pub fn read_excel(filename: String) -> Vec<Result<(String, Table<String, String>
                         .collect::<Vec<_>>()
                 })),
             }
-        }).collect::<Vec<_>>();
+        })
+        .collect::<Vec<_>>();
 
     sheets
 }
 
 fn md_santise(data: &DataType) -> String {
-    data.to_string().replace("|", "\\|").replace("\n","<br/>")
+    data.to_string().replace("|", "\\|").replace("\n", "<br/>")
 }

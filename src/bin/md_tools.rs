@@ -9,7 +9,7 @@ use markdown_tools::*;
 use std::fs::File;
 use std::io::prelude::*;
 
-const USAGE: &'static str = "
+const USAGE: &str = "
 Markdown Tools
 
 Usage:
@@ -44,7 +44,7 @@ fn read_yaml_file(filename: String) -> Result<String, String> {
     file.read_to_string(&mut contents)
         .expect("Unable to read the file");
 
-    Ok(mk_md_table_from_yaml(contents))
+    Ok(mk_md_table_from_yaml(&contents))
 }
 
 fn main() -> Result<(), String> {

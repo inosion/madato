@@ -1,9 +1,12 @@
-#![feature(use_extern_macros, wasm_custom_section, wasm_import_module, iterator_flatten, slice_patterns)]
+#![feature(
+    use_extern_macros, wasm_custom_section, wasm_import_module, iterator_flatten, slice_patterns
+)]
 
 extern crate calamine;
 extern crate indexmap;
 extern crate serde_yaml;
 extern crate wasm_bindgen;
+extern crate linked_hash_map;
 
 pub mod excel;
 pub mod types;
@@ -15,14 +18,17 @@ use indexmap::IndexSet;
 use std::cmp;
 use types::*;
 use wasm_bindgen::prelude::*;
-use utils::*;
+use std::collections::BTreeMap;
+
+#[allow(unused_imports)]
+use utils::StripMargin;
 
 #[test]
 fn can_extract_headers() {
     let hdrs = vec![
-        treemap![s!("foo") => s!("ggg"), s!("bar") => s!("fred"), s!("nop") => s!("no")], // foo bar nop
-        treemap![s!("foo") => s!("seventy"), s!("bar") => s!("barry"), s!("nop") => s!("no"), s!("aaa") => s!("ddd")], //
-        treemap![s!("bar") => s!("col has no foo"), s!("fff") => s!("ffsd")],
+        linkedhashmap![s!("foo") => s!("ggg"), s!("bar") => s!("fred"), s!("nop") => s!("no")], // foo bar nop
+        linkedhashmap![s!("foo") => s!("seventy"), s!("bar") => s!("barry"), s!("nop") => s!("no"), s!("aaa") => s!("ddd")], //
+        linkedhashmap![s!("bar") => s!("col has no foo"), s!("fff") => s!("ffsd")],
     ];
 
     let expected = indexset![s!("bar"), s!("foo"), s!("nop"), s!("aaa"), s!("fff")];
@@ -60,7 +66,7 @@ pub fn mk_header(heading_data: &[(String, usize)]) -> String {
         format!("{}{:-^width$}|", res, "-", width = h.1)
     });
 
-    return format!("{}\n{}", heading, dashed);
+    format!("{}\n{}", heading, dashed)
 }
 
 #[test]
@@ -68,9 +74,9 @@ fn can_mk_data() {
     let tbl_md = mk_data(
         &vec![(s!("foo"), 5), (s!("bar"), 8)],
         &vec![
-            treemap![s!("foo") => s!("ggg"), s!("bar") => s!("fred"), s!("nop") => s!("no")],
-            treemap![s!("foo") => s!("seventy"), s!("bar") => s!("barry"), s!("nop") => s!("no")],
-            treemap![s!("bar") => s!("col has no foo")],
+            linkedhashmap![s!("foo") => s!("ggg"), s!("bar") => s!("fred"), s!("nop") => s!("no")],
+            linkedhashmap![s!("foo") => s!("seventy"), s!("bar") => s!("barry"), s!("nop") => s!("no")],
+            linkedhashmap![s!("bar") => s!("col has no foo")],
         ],
     );
 
@@ -99,27 +105,26 @@ fn can_mk_data() {
 ///
 /// # Arguments
 ///
-/// `keys` - for the treemaps. keys determine cell order in a row
+/// `keys` - for the linkedhashmaps. keys determine cell order in a row
 /// `data` - Vector of TableRows
 ///
 pub fn mk_data(heading_data: &[(String, usize)], data: &[TableRow<String, String>]) -> String {
     let ret: Vec<String> = data
         .iter()
         .map(|hm| {
-            let m = heading_data.iter().fold(String::from("|"), |res, k| {
+            heading_data.iter().fold(String::from("|"), |res, k| {
                 let s = match hm.get(&k.0) {
                     Some(x) => x.to_string(),
                     None => "".into(),
                 };
 
                 format!("{}{: ^width$}|", res, s, width = k.1)
-            });
-            return m;
+            })
         })
         .collect::<Vec<String>>();
 
     // make a new String of all the concatenated fields
-    return ret.join("\n");
+    ret.join("\n")
 }
 
 #[test]
@@ -127,9 +132,9 @@ fn can_make_table() {
     let tbl_md = mk_table(
         &vec![s!("foo"), s!("bar")],
         &vec![
-            treemap![s!("foo") => s!("ggg"), s!("bar") => s!("fred"), s!("nop") => s!("no")],
-            treemap![s!("foo") => s!("seventy"), s!("bar") => s!("barry"), s!("nop") => s!("no")],
-            treemap![s!("bar") => s!("col has no foo")],
+            linkedhashmap![s!("foo") => s!("ggg"), s!("bar") => s!("fred"), s!("nop") => s!("no")],
+            linkedhashmap![s!("foo") => s!("seventy"), s!("bar") => s!("barry"), s!("nop") => s!("no")],
+            linkedhashmap![s!("bar") => s!("col has no foo")],
         ],
     );
 
@@ -182,19 +187,21 @@ pub fn mk_table(headings: &[String], data: &[TableRow<String, String>]) -> Strin
 #[test]
 fn can_make_table_all_cols() {
     let tbl_md = mk_table_all_cols(&vec![
-        treemap![s!("foo") => s!("ggg"), s!("bar") => s!("fred"), s!("nop") => s!("no")],
-        treemap![s!("foo") => s!("seventy"), s!("bar") => s!("barry"), s!("nop") => s!("no")],
-        treemap![s!("bar") => s!("col has no foo")],
+        linkedhashmap![s!("foo") => s!("ggg"), s!("bar") => s!("fred"), s!("nop") => s!("no")],
+        linkedhashmap![s!("foo") => s!("seventy"), s!("bar") => s!("barry"), s!("nop") => s!("no")],
+        linkedhashmap![s!("bar") => s!("col has no foo")],
     ]);
 
     // the | below is the margin
     let expected = "
-    ||     bar      |  foo  |nop|
-    ||--------------|-------|---|
-    ||     fred     |  ggg  |no |
-    ||    barry     |seventy|no |
-    ||col has no foo|       |   |"
+    ||  foo  |     bar      |nop|
+    ||-------|--------------|---|
+    ||  ggg  |     fred     |no |
+    ||seventy|    barry     |no |
+    ||       |col has no foo|   |"
         .strip_margin();
+
+    println!("{}\n{}", tbl_md, expected);
 
     assert!(tbl_md == expected);
 }
@@ -269,9 +276,8 @@ fn can_yaml_to_md() {
 /// ```
 ///
 #[wasm_bindgen]
-pub fn mk_md_table_from_yaml(yaml: String) -> String {
-    let deserialized_map: Table<String, String> = serde_yaml::from_str(&yaml).unwrap();
-    mk_table_all_cols(&deserialized_map)
+pub fn mk_md_table_from_yaml(yaml: &str) -> String {
+    mk_table_all_cols( &load_yaml(yaml))
 }
 
 #[test]
@@ -306,14 +312,28 @@ fn can_yaml_to_md_with_headings() {
 }
 
 #[wasm_bindgen]
-pub fn mk_md_table_from_yaml_with_headings_list(headings: String, yaml: String) -> String {
+pub fn mk_md_table_from_yaml_with_headings_list(headings: &str, yaml: &str) -> String {
     mk_md_table_from_yaml_with_headings(
-        &headings.split(",").map(String::from).collect::<Vec<_>>(),
+        &headings.split(',').map(String::from).collect::<Vec<_>>(),
         yaml,
     )
 }
 
-pub fn mk_md_table_from_yaml_with_headings(headings: &[String], yaml: String) -> String {
-    let deserialized_map: Table<String, String> = serde_yaml::from_str(&yaml).unwrap();
-    mk_table(&headings, &deserialized_map)
+pub fn mk_md_table_from_yaml_with_headings(headings: &[String], yaml: &str) -> String {
+    mk_table(&headings, &load_yaml(yaml))
+}
+
+fn load_yaml(yaml: &str) -> Table<String,String> {
+        let deserialized_map: Vec<BTreeMap<String, String>> = serde_yaml::from_str(&yaml).unwrap();
+
+        deserialized_map
+        .iter()
+        .map(|btree| {
+            btree
+                .iter()
+                .map(|(x, y)| (x.clone(), y.clone()))
+                .collect::<TableRow<String, String>>()
+        })
+        .collect::<Vec<_>>()
+
 }

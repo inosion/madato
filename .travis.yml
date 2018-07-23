@@ -1,18 +1,17 @@
 language: rust
 sudo: false
 
-matrix:
-  include:
-    - rust: stable
-    - rust: beta
-    - rust: nightly
-      script:
-        - cargo test
-        - cargo test --features nightly
-
 rust:
         # - nightly-2018-07-16
   - nightly
 
-script:
-  - cargo test --verbose && cargo build --verbose && cargo install
+script: |
+  cargo build --verbose &&
+  cargo test  --verbose &&
+  cargo doc   --verbose
+
+branches:
+  only:
+    - staging # bors r+
+    - trying  # bors try
+    - master

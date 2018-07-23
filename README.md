@@ -122,6 +122,7 @@ And as Markdown:
 * `[ ]` Support Nested Structures in the YAML imput
 
 ### Known Issues
-[ ] A Spreadsheet Cell with a Date will come out as the "magic" Excel date number :-( - https://github.com/tafia/calamine/issues/116
+* A Spreadsheet Cell with a Date will come out as the "magic" Excel date number :-( - https://github.com/tafia/calamine/issues/116
+* Order of columns in the YAML are not preserved. LinkedHashMap fixes it, but the serde bindings doesn't seem to work. Not sure why yet.
 
 

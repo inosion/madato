@@ -30,3 +30,7 @@ A: assign it to an invalid type .. eg `let x:u32 = data.map().my_complex_transfo
 npm install
 npm run serve
 ```
+
+## travis CI 
+
+- https://dev.to/cad97/great-rust-ci-1fk6
