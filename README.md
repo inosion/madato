@@ -2,7 +2,7 @@
 
 # Markdown Tooling
 
-* Supports making Markdown Tables from tabular data
+* Supports making Markdown Tables from tabular data; YAML files and Excel/OpenOffice Spreadsheets
 
 provided as 
 
@@ -19,44 +19,72 @@ provided as
 
 # TL;DR For Install and Usage
 
+* Cut and Paste some random tables from some HTML file, save it to Excel / OpenOffice. and run this tool, it will give you a nicely formatted Markdown Table of the same :-D
+
 ## Commandline
 
-Excel, (XLSX, XLS, XLSM, XLSB, ODS)
+### Excel, (XLSX, XLS, XLSM, XLSB, ODS)
 
-`md_tools table -t xlsx test/sample_multi_sheet.xslx.xlsx`
+`md_tools table -t xlsx test/sample_multi_sheet.xslx.xlsx` 
+
+See [test/sample_multi_sheet.xslx.xlsx](test/sample_multi_sheet.xslx.xlsx) for the original file.
+
 ```
 **Sheet1**
-|Change|  Language  |                         Rank                         | Share |Trend |
-|------|------------|------------------------------------------------------|-------|------|
-|      |   Python   |                          1                           |23.59 %|+5.5 %|
-|      |    Java    |                          2                           |22.4 % |-0.5 %|
-|      | Javascript |                          3                           |8.49 % |+0.2 %|
-|      |    PHP     |                          4                           |7.93 % |-1.5 %|
-...
+|                         Rank                         |Change|  Language  | Share |Trend |
+|------------------------------------------------------|------|------------|-------|------|
+|                          1                           |      |   Python   |23.59 %|+5.5 %|
+|                          2                           |      |    Java    |22.4 % |-0.5 %|
+|                          3                           |      | Javascript |8.49 % |+0.2 %|
+|                          4                           |      |    PHP     |7.93 % |-1.5 %|
+|                          5                           |      |     C#     |7.84 % |-0.5 %|
+|                          6                           |      |   C/C++    |6.28 % |-0.8 %|
+|                          7                           |      |     R      |4.18 % |+0.0 %|
+|                          8                           |      |Objective-C | 3.4 % |-1.0 %|
+|                          9                           |      |   Swift    |2.65 % |-0.9 %|
+|                          10                          |      |   Matlab   |2.25 % |-0.3 %|
+|                          11                          |      |    Ruby    |1.59 % |-0.5 %|
+|                          12                          |      | TypeScript |1.58 % |+0.3 %|
+|                          13                          |      |    VBA     |1.42 % |-0.1 %|
+|                          14                          |      |Visual Basic| 1.2 % |-0.2 %|
+|                          15                          |      |   Scala    | 1.2 % |-0.1 %|
+|                          16                          |      |   Kotlin   |0.97 % |+0.5 %|
+|                          17                          |      |     Go     |0.93 % |+0.3 %|
+|                          18                          |      |    Perl    |0.78 % |-0.1 %|
+|                          19                          |      |    Lua     |0.42 % |-0.1 %|
+|                          20                          |      |    Rust    |0.36 % |+0.0 %|
+|                          21                          |      |  Haskell   | 0.3 % |-0.1 %|
+|                          22                          |      |   Delphi   |0.25 % |-0.1 %|
+|( Source - http://pypl.github.io/PYPL.html - Jul 2018)|      |            |       |      |
 
 **second_sheet**
-|        Heading 4         |        Random Stuff        |       Sample XLS Data Type        |                The Resulting Value                 |
-|--------------------------|----------------------------|-----------------------------------|----------------------------------------------------|
-|                          |                            |           >> =”Formula”           |                      Formula                       |
-|         << empty         |                            |         >> Simple String          |                       Value                        |
-|                          |                            |          >> Some Number           |                 0.0977795336595647                 |
-|*Some Bolding in Markdown*|   >> Markdown Formatting   |        >> Large Cell Value        |Something longer than expected for most of the table|
-|   `escaped value` foo    |                            |>> Conflicting Table Markdown Text |             This cell has \| pipes \|              |
-|           0.22           |>> Percentage (cell is 0.22)|           >> Multiline            |            This Cell<br/>Is multi-line             |
-|                          |                            |       >> Invalid Reference        |                       #REF!                        |
-|                          |                            |     >> Valid Reference (=B1)      |                The Resulting Value                 |
-|         #DIV/0!          |        >> Div by 0         |       >> Unicode Characters       |                    😕 ← Emoticon                    |
-|                          |                            |           >> Date Style           |                       43122                        |
-...
+|       Sample XLS Data Type        |                The Resulting Value                 |        Random Stuff        |        Heading 4         |
+|-----------------------------------|----------------------------------------------------|----------------------------|--------------------------|
+|           >> =”Formula”           |                      Formula                       |                            |                          |
+|         >> Simple String          |                       Value                        |                            |         << empty         |
+|          >> Some Number           |                 0.0977795336595647                 |                            |                          |
+|        >> Large Cell Value        |Something longer than expected for most of the table|   >> Markdown Formatting   |*Some Bolding in Markdown*|
+|>> Conflicting Table Markdown Text |             This cell has \| pipes \|              |                            |   `escaped value` foo    |
+|           >> Multiline            |            This Cell<br/>Is multi-line             |>> Percentage (cell is 0.22)|           0.22           |
+|       >> Invalid Reference        |                       #REF!                        |                            |                          |
+|     >> Valid Reference (=B1)      |                The Resulting Value                 |                            |                          |
+|       >> Unicode Characters       |                    😕 ← Emoticon                    |        >> Div by 0         |         #DIV/0!          |
+|           >> Date Style           |                       43122                        |                            |                          |
+|                                   |                       43122                        |         >> Quotes          |  “This cell has quotes”  |
+|                                   |                      -888.78                       |                            |                          |
+|                                   |                      #VALUE!                       |                            |       😕 ← Emoticon       |
 
 **3rd Sheet**
-|NULL5|col1|col2| col3 |col4 |                         col5                          |
-|-----|----|----|------|-----|-------------------------------------------------------|
-| aaa | 1  |that| are  |wider|  value ‘aaa’ is in the next cell, but has no heading  |
-|     |than|the |header| row |       (open the spreadsheet to see what I mean)       |
+|col1|col2| col3 |col4 |                         col5                          |NULL5|
+|----|----|------|-----|-------------------------------------------------------|-----|
+| 1  |that| are  |wider|  value ‘aaa’ is in the next cell, but has no heading  | aaa |
+|than|the |header| row |       (open the spreadsheet to see what I mean)       |     |
 ```
 
-`md_tools table -t yaml www-sample/test.yml`
+`md_tools table -t yaml test/www-sample/test.yml`
+
+### YAML Example
+
 ```
 |col3| col4  |  data1  |       data2        |
 |----|-------|---------|--------------------|
@@ -121,8 +149,11 @@ And as Markdown:
 * `[ ]` Read a CSV, TSV, PSV (etc) file and produce a Markdown Table
 * `[ ]` Support Nested Structures in the YAML imput
 
+### Future Goals
+* Finish the testing and publishing of the JS WASM Bindings. (PS - it works.. 
+  (see : [test/www-sample](test/www-sample) and the [Makefile](Makefile) )
+* Embed the "importing" of YAML, CSV and XLS* files into the `mume` Markdown Preview Enhanced Plugin. [https://shd101wyy.github.io/markdown-preview-enhanced/](https://shd101wyy.github.io/markdown-preview-enhanced/) So we can have Awesome Markdown Documents.
+
 ### Known Issues
 * A Spreadsheet Cell with a Date will come out as the "magic" Excel date number :-( - https://github.com/tafia/calamine/issues/116
 * Order of columns in the YAML are not preserved. LinkedHashMap fixes it, but the serde bindings doesn't seem to work. Not sure why yet.
-
-
