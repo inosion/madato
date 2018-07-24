@@ -4,9 +4,9 @@
 
 extern crate calamine;
 extern crate indexmap;
+extern crate linked_hash_map;
 extern crate serde_yaml;
 extern crate wasm_bindgen;
-extern crate linked_hash_map;
 
 pub mod excel;
 pub mod types;
@@ -16,9 +16,9 @@ mod utils;
 
 use indexmap::IndexSet;
 use std::cmp;
+use std::collections::BTreeMap;
 use types::*;
 use wasm_bindgen::prelude::*;
-use std::collections::BTreeMap;
 
 #[allow(unused_imports)]
 use utils::StripMargin;
@@ -245,7 +245,7 @@ fn can_yaml_to_md() {
     ||100 | ta da |  this   |someother value here|"
         .strip_margin();
 
-    let tbl_md = mk_md_table_from_yaml(yml_data);
+    let tbl_md = mk_md_table_from_yaml(&yml_data);
     assert!(tbl_md == expected);
 }
 
@@ -277,7 +277,7 @@ fn can_yaml_to_md() {
 ///
 #[wasm_bindgen]
 pub fn mk_md_table_from_yaml(yaml: &str) -> String {
-    mk_table_all_cols( &load_yaml(yaml))
+    mk_table_all_cols(&load_yaml(yaml))
 }
 
 #[test]
@@ -307,7 +307,7 @@ fn can_yaml_to_md_with_headings() {
     ||  this   |someother value here| ta da |"
         .strip_margin();
 
-    let tbl_md = mk_md_table_from_yaml_with_headings(&headings, yml_data);
+    let tbl_md = mk_md_table_from_yaml_with_headings(&headings, &yml_data);
     assert!(tbl_md == expected);
 }
 
@@ -323,10 +323,10 @@ pub fn mk_md_table_from_yaml_with_headings(headings: &[String], yaml: &str) -> S
     mk_table(&headings, &load_yaml(yaml))
 }
 
-fn load_yaml(yaml: &str) -> Table<String,String> {
-        let deserialized_map: Vec<BTreeMap<String, String>> = serde_yaml::from_str(&yaml).unwrap();
+fn load_yaml(yaml: &str) -> Table<String, String> {
+    let deserialized_map: Vec<BTreeMap<String, String>> = serde_yaml::from_str(&yaml).unwrap();
 
-        deserialized_map
+    deserialized_map
         .iter()
         .map(|btree| {
             btree
@@ -335,5 +335,4 @@ fn load_yaml(yaml: &str) -> Table<String,String> {
                 .collect::<TableRow<String, String>>()
         })
         .collect::<Vec<_>>()
-
 }

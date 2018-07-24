@@ -81,5 +81,9 @@ pub fn read_excel(
 }
 
 fn md_santise(data: &DataType) -> String {
-    data.to_string().replace("|", "\\|").replace("\n", "<br/>")
+    data.to_string()
+        .replace("|", "\\|")
+        .replace("\r\n", "<br/>")
+        .replace("\n", "<br/>")
+        .replace("\r", "<br/>")
 }
