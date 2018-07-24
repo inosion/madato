@@ -5,7 +5,7 @@ extern crate markdown_tools;
 
 use docopt::Docopt;
 use markdown_tools::excel::*;
-use markdown_tools::*;
+use markdown_tools::yaml::*;
 use std::fs::File;
 use std::io::prelude::*;
 

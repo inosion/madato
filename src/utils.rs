@@ -1,5 +1,5 @@
-#[macro_use]
 #[allow(unused_macros)]
+#[macro_export]
 macro_rules! s {
     ($s:expr) => {
         String::from($s)
@@ -7,6 +7,7 @@ macro_rules! s {
 }
 
 #[allow(unused_macros)]
+#[macro_export]
 macro_rules! hashmap {
     ($( $key: expr => $val: expr ),*) => {{
          let mut map = ::std::collections::HashMap::new();
