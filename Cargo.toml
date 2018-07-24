@@ -1,6 +1,6 @@
 [package]
 name = "markdown_tools"
-version = "0.1.2"
+version = "0.2.0"
 authors = ["Ramon Buckland <ramon.buckland@inosion.com>"]
 exclude = [
     "doc/*",

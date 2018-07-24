@@ -21,8 +21,8 @@ fn table_formatter(
     }
 }
 
-pub fn spreadsheet_to_md(filename: String) -> Result<String, String> {
-    let results = read_excel(filename);
+pub fn spreadsheet_to_md(filename: String, sheet_name: Option<String>) -> Result<String, String> {
+    let results = read_excel(filename, sheet_name);
     if results.len() <= 1 {
         Ok(table_formatter(results[0].clone(), false))
     } else {
@@ -36,11 +36,16 @@ pub fn spreadsheet_to_md(filename: String) -> Result<String, String> {
 
 pub fn read_excel(
     filename: String,
+    sheet_name: Option<String>,
 ) -> Vec<Result<(String, Table<String, String>), (String, String)>> {
     // opens a new workbook
     let mut workbook = open_workbook_auto(filename).expect("Cannot open file");
 
-    let sheet_names = workbook.sheet_names().to_owned();
+    let sheet_names = if let Some(sheet_name) = sheet_name {
+        workbook.sheet_names().to_owned().into_iter().filter(|n| *n == sheet_name).to_owned().collect::<Vec<_>>()
+    } else {
+        workbook.sheet_names().to_owned()
+    };
 
     let sheets: Vec<Result<(String, Table<String, String>), (String, String)>> = sheet_names
         .iter()

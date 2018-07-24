@@ -13,7 +13,7 @@ const USAGE: &str = "
 Markdown Tools
 
 Usage:
-  md-tools table -t <type> <filename>
+  md-tools table -t <type> [-s <sheetname>] <filename> 
   md-tools (-h | --help)
   md-tools --version
 
@@ -22,6 +22,7 @@ Options:
   --version             Show version.
   -t --type <type>      Input Type.
   <filename>            Input Filename.
+  -s --sheetname <sheetname>       When a Spreadsheet, restrict to just one of the sheets.
 ";
 
 #[derive(Debug, Deserialize)]
@@ -29,6 +30,7 @@ struct Args {
     cmd_table: bool,
     flag_type: FileType,
     arg_filename: String,
+    flag_sheetname: Option<String>
 }
 
 #[derive(Debug, Deserialize)]
@@ -54,7 +56,7 @@ fn main() -> Result<(), String> {
 
     let result = match args.flag_type {
         FileType::YAML => read_yaml_file(args.arg_filename),
-        FileType::XLSX => spreadsheet_to_md(args.arg_filename),
+        FileType::XLSX => spreadsheet_to_md(args.arg_filename, args.flag_sheetname),
         _ => Err(String::from("not implemented")),
     };
 
