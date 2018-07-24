@@ -2,6 +2,11 @@
 name = "markdown_tools"
 version = "0.1.2"
 authors = ["Ramon Buckland <ramon.buckland@inosion.com>"]
+exclude = [
+    "doc/*",
+    "assets/*",
+    "test/*",
+]
 
 [lib]
 crate-type = ["cdylib", "rlib"]
