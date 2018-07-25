@@ -1,4 +1,3 @@
-use std::collections::BTreeMap;
 use types::*;
 use wasm_bindgen::prelude::*;
 use linked_hash_map::LinkedHashMap;
@@ -26,11 +25,11 @@ fn can_yaml_to_md() {
 
     // the | below is the margin
     let expected = "
-    ||col3| col4  |  data1  |       data2        |
-    ||----|-------|---------|--------------------|
-    ||100 |gar gar|somevalue|someother value here|
-    ||190x|       |  that   |        nice        |
-    ||100 | ta da |  this   |someother value here|"
+    ||  data1  |       data2        |col3| col4  |
+    ||---------|--------------------|----|-------|
+    ||somevalue|someother value here|100 |gar gar|
+    ||  that   |        nice        |190x|       |
+    ||  this   |someother value here|100 | ta da |"
         .strip_margin();
 
     let tbl_md = mk_md_table_from_yaml(&yml_data);

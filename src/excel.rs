@@ -3,7 +3,7 @@
 use calamine::{open_workbook_auto, DataType, Reader};
 
 use mk_table_all_cols;
-use types::{Table, TableRow, NamedTable, ErroredTable};
+use types::{TableRow, NamedTable, ErroredTable};
 
 fn table_to_md_generator(
     table: Result<NamedTable<String,String>, ErroredTable>,
