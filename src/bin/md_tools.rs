@@ -14,10 +14,14 @@ Markdown Tools
 
 Usage:
   md-tools table -t <type> [-s <sheetname>] [-o <outputtype>] <filename> 
+  md-tools sheetlist <filename>
   md-tools (-h | --help)
   md-tools --version
 
 Options:
+
+  table                         Generate Makrdown or YAML tables from a Source.
+  sheetlist                     Read an Excel/ODS file and list out the names in the sheet.
   -h --help                     Show this screen.
   --version                     Show version.
   -t --type <type>              Input Type.
@@ -29,8 +33,10 @@ Options:
 #[derive(Debug, Deserialize)]
 struct Args {
     cmd_table: bool,
-    flag_type: FileType,
+    cmd_sheetlist: bool,
     arg_filename: String,
+
+    flag_type: Option<FileType>,
     flag_sheetname: Option<String>,
     flag_outputtype: OutputType,
 }
@@ -57,15 +63,27 @@ fn read_yaml_file(filename: String) -> Result<String, String> {
     Ok(mk_md_table_from_yaml(&contents))
 }
 
+fn get_sheet_names(filename: String) {
+  for s in list_sheet_names(filename).unwrap() {
+    println!("{}",s);
+  }
+}
+
 fn main() -> Result<(), String> {
+
     let args: Args = Docopt::new(USAGE)
         .and_then(|d| d.deserialize())
         .unwrap_or_else(|e| e.exit());
 
+    if args.cmd_sheetlist {
+      get_sheet_names(args.arg_filename);
+      return Ok(());
+    } 
+
     let output_string = match args.flag_outputtype {
         OutputType::MD => match args.flag_type {
-            FileType::YAML => read_yaml_file(args.arg_filename),
-            FileType::XLSX => spreadsheet_to_md(args.arg_filename, args.flag_sheetname),
+            Some(FileType::YAML) => read_yaml_file(args.arg_filename),
+            Some(FileType::XLSX) => spreadsheet_to_md(args.arg_filename, args.flag_sheetname),
             _ => Err(String::from("not implemented")),
         },
         OutputType::YAML => {

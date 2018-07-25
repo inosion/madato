@@ -4,5 +4,8 @@
 * `0.2.0`- 25 Jul 2018
   - Added the `--sheetname <name>` to the command line tool.
 * `0.3.0` - 26 Jul 2018
-  - From the command line, you can export the XLS* sheet(s) as YAML. 
+  - From the command line, you can export the XLSn/ODS sheet(s) as YAML. 
     This is helpful if you want to "store the YAML sheet into a repo"
+* `0.4.0` - 26 Jul 2018
+  - To help with CI/CD type environments, and scripting, you can list out the sheetnames
+    like `md_tools listsheets <filename>`
