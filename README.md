@@ -3,6 +3,7 @@
 # Markdown Tooling
 
 * Supports making Markdown Tables from tabular data; YAML files and Excel/OpenOffice Spreadsheets
+* Supports converting an Excel/ODS Spreadsheet to a YAML file.
 
 provided as 
 
@@ -23,7 +24,7 @@ provided as
 
 ## Commandline
 
-### Excel, (XLSX, XLS, XLSM, XLSB, ODS)
+### Excel, (XLSX, XLS, XLSM, XLSB, ODS)  to Markdown
 
 `md_tools table -t xlsx test/sample_multi_sheet.xslx.xlsx` 
 
@@ -40,22 +41,8 @@ See [test/sample_multi_sheet.xslx.xlsx](test/sample_multi_sheet.xslx.xlsx) for t
 |                          5                           |      |     C#     |7.84 % |-0.5 %|
 |                          6                           |      |   C/C++    |6.28 % |-0.8 %|
 |                          7                           |      |     R      |4.18 % |+0.0 %|
-|                          8                           |      |Objective-C | 3.4 % |-1.0 %|
-|                          9                           |      |   Swift    |2.65 % |-0.9 %|
-|                          10                          |      |   Matlab   |2.25 % |-0.3 %|
-|                          11                          |      |    Ruby    |1.59 % |-0.5 %|
-|                          12                          |      | TypeScript |1.58 % |+0.3 %|
-|                          13                          |      |    VBA     |1.42 % |-0.1 %|
-|                          14                          |      |Visual Basic| 1.2 % |-0.2 %|
-|                          15                          |      |   Scala    | 1.2 % |-0.1 %|
-|                          16                          |      |   Kotlin   |0.97 % |+0.5 %|
-|                          17                          |      |     Go     |0.93 % |+0.3 %|
-|                          18                          |      |    Perl    |0.78 % |-0.1 %|
-|                          19                          |      |    Lua     |0.42 % |-0.1 %|
-|                          20                          |      |    Rust    |0.36 % |+0.0 %|
-|                          21                          |      |  Haskell   | 0.3 % |-0.1 %|
-|                          22                          |      |   Delphi   |0.25 % |-0.1 %|
-|( Source - http://pypl.github.io/PYPL.html - Jul 2018)|      |            |       |      |
+
+...
 
 **second_sheet**
 |       Sample XLS Data Type        |                The Resulting Value                 |        Random Stuff        |        Heading 4         |
@@ -63,27 +50,20 @@ See [test/sample_multi_sheet.xslx.xlsx](test/sample_multi_sheet.xslx.xlsx) for t
 |           >> =”Formula”           |                      Formula                       |                            |                          |
 |         >> Simple String          |                       Value                        |                            |         << empty         |
 |          >> Some Number           |                 0.0977795336595647                 |                            |                          |
-|        >> Large Cell Value        |Something longer than expected for most of the table|   >> Markdown Formatting   |*Some Bolding in Markdown*|
-|>> Conflicting Table Markdown Text |             This cell has \| pipes \|              |                            |   `escaped value` foo    |
-|           >> Multiline            |            This Cell<br/>Is multi-line             |>> Percentage (cell is 0.22)|           0.22           |
-|       >> Invalid Reference        |                       #REF!                        |                            |                          |
-|     >> Valid Reference (=B1)      |                The Resulting Value                 |                            |                          |
 |       >> Unicode Characters       |                    😕 ← Emoticon                    |        >> Div by 0         |         #DIV/0!          |
-|           >> Date Style           |                       43122                        |                            |                          |
-|                                   |                       43122                        |         >> Quotes          |  “This cell has quotes”  |
-|                                   |                      -888.78                       |                            |                          |
-|                                   |                      #VALUE!                       |                            |       😕 ← Emoticon       |
+
+...
 
 **3rd Sheet**
 |col1|col2| col3 |col4 |                         col5                          |NULL5|
 |----|----|------|-----|-------------------------------------------------------|-----|
 | 1  |that| are  |wider|  value ‘aaa’ is in the next cell, but has no heading  | aaa |
 |than|the |header| row |       (open the spreadsheet to see what I mean)       |     |
+
 ```
+### YAML to Markdown 
 
 `md_tools table -t yaml test/www-sample/test.yml`
-
-### YAML Example
 
 ```
 |col3| col4  |  data1  |       data2        |
@@ -92,6 +72,32 @@ See [test/sample_multi_sheet.xslx.xlsx](test/sample_multi_sheet.xslx.xlsx) for t
 |190x|       |  that   |        nice        |
 |100 | ta da |  this   |someother value here|
 ```
+
+### Excel/ODS to YAML
+
+```
+md_tools table -t xlsx test/sample_multi_sheet.xslx.xlsx -s Sheet1 -o yaml
+---
+- Rank: "1"
+  Change: ""
+  Language: Python
+  Share: "23.59 %"
+  Trend: "+5.5 %"
+- Rank: "2"
+  Change: ""
+  Language: Java
+  Share: "22.4 %"
+  Trend: "-0.5 %"
+- Rank: "3"
+  Change: ""
+  Language: Javascript
+  Share: "8.49 %"
+...
+```
+
+If you omit the sheet name, it will dump all sheets into an order map of array of maps.
+
+
 ## Rust
 
 `TODO` - Publish on crates.io
@@ -156,4 +162,3 @@ And as Markdown:
 
 ### Known Issues
 * A Spreadsheet Cell with a Date will come out as the "magic" Excel date number :-( - https://github.com/tafia/calamine/issues/116
-* Order of columns in the YAML are not preserved. LinkedHashMap fixes it, but the serde bindings doesn't seem to work. Not sure why yet.
