@@ -3,10 +3,10 @@
 use calamine::{open_workbook_auto, DataType, Reader};
 
 use mk_table_all_cols;
-use types::{Table, TableRow};
+use types::{Table, TableRow, NamedTable, ErroredTable};
 
-fn table_formatter(
-    table: Result<(String, Table<String, String>), (String, String)>,
+fn table_to_md_generator(
+    table: Result<NamedTable<String,String>, ErroredTable>,
     print_name: bool,
 ) -> String {
     match table {
@@ -24,11 +24,11 @@ fn table_formatter(
 pub fn spreadsheet_to_md(filename: String, sheet_name: Option<String>) -> Result<String, String> {
     let results = read_excel(filename, sheet_name);
     if results.len() <= 1 {
-        Ok(table_formatter(results[0].clone(), false))
+        Ok(table_to_md_generator(results[0].clone(), false))
     } else {
         Ok(results
             .iter()
-            .map(|table_result| table_formatter(table_result.clone(), true))
+            .map(|table_result| table_to_md_generator(table_result.clone(), true))
             .collect::<Vec<String>>()
             .join("\n\n"))
     }
@@ -37,17 +37,23 @@ pub fn spreadsheet_to_md(filename: String, sheet_name: Option<String>) -> Result
 pub fn read_excel(
     filename: String,
     sheet_name: Option<String>,
-) -> Vec<Result<(String, Table<String, String>), (String, String)>> {
+) -> Vec<Result<NamedTable<String,String>, ErroredTable>> {
     // opens a new workbook
     let mut workbook = open_workbook_auto(filename).expect("Cannot open file");
 
     let sheet_names = if let Some(sheet_name) = sheet_name {
-        workbook.sheet_names().to_owned().into_iter().filter(|n| *n == sheet_name).to_owned().collect::<Vec<_>>()
+        workbook
+            .sheet_names()
+            .to_owned()
+            .into_iter()
+            .filter(|n| *n == sheet_name)
+            .to_owned()
+            .collect::<Vec<_>>()
     } else {
         workbook.sheet_names().to_owned()
     };
 
-    let sheets: Vec<Result<(String, Table<String, String>), (String, String)>> = sheet_names
+    let sheets: Vec<Result<NamedTable<String,String>, ErroredTable>> = sheet_names
         .iter()
         .map(|name| {
             let maybe_sheet = workbook.worksheet_range(name);

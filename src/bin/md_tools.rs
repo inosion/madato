@@ -13,16 +13,17 @@ const USAGE: &str = "
 Markdown Tools
 
 Usage:
-  md-tools table -t <type> [-s <sheetname>] <filename> 
+  md-tools table -t <type> [-s <sheetname>] [-o <outputtype>] <filename> 
   md-tools (-h | --help)
   md-tools --version
 
 Options:
-  -h --help             Show this screen.
-  --version             Show version.
-  -t --type <type>      Input Type.
-  <filename>            Input Filename.
-  -s --sheetname <sheetname>       When a Spreadsheet, restrict to just one of the sheets.
+  -h --help                     Show this screen.
+  --version                     Show version.
+  -t --type <type>              Input Type.
+  <filename>                    Input Filename.
+  -s --sheetname <sheetname>    When a Spreadsheet, restrict to just one of the sheets.
+  -o --outputtype <outputtype>  MD (Markdown) or YAML. [default: MD]
 ";
 
 #[derive(Debug, Deserialize)]
@@ -30,7 +31,8 @@ struct Args {
     cmd_table: bool,
     flag_type: FileType,
     arg_filename: String,
-    flag_sheetname: Option<String>
+    flag_sheetname: Option<String>,
+    flag_outputtype: OutputType,
 }
 
 #[derive(Debug, Deserialize)]
@@ -38,6 +40,12 @@ enum FileType {
     YAML,
     XLSX,
     CSV,
+}
+
+#[derive(Debug, Deserialize)]
+enum OutputType {
+    YAML,
+    MD,
 }
 
 fn read_yaml_file(filename: String) -> Result<String, String> {
@@ -54,13 +62,16 @@ fn main() -> Result<(), String> {
         .and_then(|d| d.deserialize())
         .unwrap_or_else(|e| e.exit());
 
-    let result = match args.flag_type {
-        FileType::YAML => read_yaml_file(args.arg_filename),
-        FileType::XLSX => spreadsheet_to_md(args.arg_filename, args.flag_sheetname),
-        _ => Err(String::from("not implemented")),
+    let output_string = match args.flag_outputtype {
+        OutputType::MD => match args.flag_type {
+            FileType::YAML => read_yaml_file(args.arg_filename),
+            FileType::XLSX => spreadsheet_to_md(args.arg_filename, args.flag_sheetname),
+            _ => Err(String::from("not implemented")),
+        },
+        OutputType::YAML => unimplemented!("not ready yet"),
     };
 
-    match result {
+    match output_string {
         Ok(markdown) => {
             println!("{}", markdown);
             Ok(())

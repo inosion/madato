@@ -1,7 +1,7 @@
 use std::collections::BTreeMap;
 use types::*;
 use wasm_bindgen::prelude::*;
-
+use linked_hash_map::LinkedHashMap;
 use super::{mk_table, mk_table_all_cols};
 
 #[allow(unused_imports)]
@@ -73,8 +73,9 @@ pub fn mk_md_table_from_yaml_with_headings(headings: &[String], yaml: &str) -> S
 }
 
 fn load_yaml(yaml: &str) -> Table<String, String> {
-    let deserialized_map: Vec<BTreeMap<String, String>> = serde_yaml::from_str(&yaml).unwrap();
-
+    let deserialized_map: Table<String, String> = serde_yaml::from_str(&yaml).unwrap();
+    deserialized_map
+/*
     deserialized_map
         .iter()
         .map(|btree| {
@@ -84,6 +85,7 @@ fn load_yaml(yaml: &str) -> Table<String, String> {
                 .collect::<TableRow<String, String>>()
         })
         .collect::<Vec<_>>()
+        */
 }
 
 #[wasm_bindgen]
@@ -123,4 +125,14 @@ pub fn mk_md_table_from_yaml_with_headings_list(headings: &str, yaml: &str) -> S
 #[wasm_bindgen]
 pub fn mk_md_table_from_yaml(yaml: &str) -> String {
     mk_table_all_cols(&load_yaml(yaml))
+}
+
+pub fn mk_yaml_from_table_result(tables: Vec<Result<NamedTable<String,String>, ErroredTable>>) -> String {
+
+    let table_map: LinkedHashMap<String,Table<String,String>> = tables
+    .into_iter()
+    .filter_map(Result::ok)
+    .collect();
+
+     serde_yaml::to_string(&table_map).unwrap()
 }
