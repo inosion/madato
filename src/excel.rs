@@ -3,32 +3,33 @@
 use calamine::{open_workbook_auto, DataType, Reader};
 
 use mk_table_all_cols;
-use types::{TableRow, NamedTable, ErroredTable};
+use types::{TableRow, NamedTable, ErroredTable, KVFilter};
 
 fn table_to_md_generator(
     table: Result<NamedTable<String,String>, ErroredTable>,
     print_name: bool,
+    filter: &Option<KVFilter>
 ) -> String {
     match table {
         Err((name, error)) => format!("Sheet `{}` errored: {}", name, error),
         Ok((name, table_data)) => {
             if print_name {
-                format!("**{}**\n{}", name, mk_table_all_cols(&table_data))
+                format!("**{}**\n{}", name, mk_table_all_cols(&table_data, &filter))
             } else {
-                mk_table_all_cols(&table_data)
+                mk_table_all_cols(&table_data, &filter)
             }
         }
     }
 }
 
-pub fn spreadsheet_to_md(filename: String, sheet_name: Option<String>) -> Result<String, String> {
+pub fn spreadsheet_to_md(filename: String, sheet_name: Option<String>, filter: &Option<KVFilter>) -> Result<String, String> {
     let results = read_excel(filename, sheet_name);
     if results.len() <= 1 {
-        Ok(table_to_md_generator(results[0].clone(), false))
+        Ok(table_to_md_generator(results[0].clone(), false, filter))
     } else {
         Ok(results
             .iter()
-            .map(|table_result| table_to_md_generator(table_result.clone(), true))
+            .map(|table_result| table_to_md_generator(table_result.clone(), true, filter))
             .collect::<Vec<String>>()
             .join("\n\n"))
     }

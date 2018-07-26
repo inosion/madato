@@ -13,7 +13,7 @@ const USAGE: &str = "
 Markdown Tools
 
 Usage:
-  md-tools table -t <type> [-s <sheetname>] [-o <outputtype>] <filename> 
+  md-tools table -t <type> [-p <jsonpath>] [-s <sheetname>] [-o <outputtype>] <filename>
   md-tools sheetlist <filename>
   md-tools (-h | --help)
   md-tools --version
@@ -22,12 +22,23 @@ Options:
 
   table                         Generate Makrdown or YAML tables from a Source.
   sheetlist                     Read an Excel/ODS file and list out the names in the sheet.
-  -h --help                     Show this screen.
-  --version                     Show version.
-  -t --type <type>              Input Type.
+
   <filename>                    Input Filename.
+
+  -t --type <type>              Input Type.
   -s --sheetname <sheetname>    When a Spreadsheet, restrict to just one of the sheets.
   -o --outputtype <outputtype>  MD (Markdown) or YAML. [default: MD]
+  -f --filter <expr>            Filter data in the results based on a simple, key=value
+
+  -h --help                     Show this screen.
+  --version                     Show version.
+
+Example:
+  Basic Filtering support occurs on a row by row basis where the key=value pair need to match.
+  Both support a regular expression over the key and or the value.
+
+  col[0-9]=val.*
+  columnname=A[0-9]
 ";
 
 #[derive(Debug, Deserialize)]
@@ -54,13 +65,13 @@ enum OutputType {
     MD,
 }
 
-fn read_yaml_file(filename: String) -> Result<String, String> {
+fn yaml_file_to_md(filename: String) -> Result<String, String> {
     let mut file = File::open(filename).expect("Unable to open the file");
     let mut contents = String::new();
     file.read_to_string(&mut contents)
         .expect("Unable to read the file");
 
-    Ok(mk_md_table_from_yaml(&contents))
+    Ok(mk_md_table_from_yaml(&contents, &None))
 }
 
 fn get_sheet_names(filename: String) {
@@ -82,8 +93,8 @@ fn main() -> Result<(), String> {
 
     let output_string = match args.flag_outputtype {
         OutputType::MD => match args.flag_type {
-            Some(FileType::YAML) => read_yaml_file(args.arg_filename),
-            Some(FileType::XLSX) => spreadsheet_to_md(args.arg_filename, args.flag_sheetname),
+            Some(FileType::YAML) => yaml_file_to_md(args.arg_filename),
+            Some(FileType::XLSX) => spreadsheet_to_md(args.arg_filename, args.flag_sheetname, &None),
             _ => Err(String::from("not implemented")),
         },
         OutputType::YAML => {

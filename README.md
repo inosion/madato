@@ -1,5 +1,12 @@
 ![travis-ci](https://travis-ci.org/inosion/markdown-tools.svg?branch=master)
 
+
+![under_construction.png](images/under_construction.png)
+
+**The RUST and JS APIs of this libraray are not yet final.**
+
+If you wish to use this lib (other than the command line); create an issue for a stable API and it will get priority. Currently, focus is on features, and the APIs will "arise" from that.
+
 # Markdown Tooling
 
 * Supports making Markdown Tables from tabular data; YAML files and Excel/OpenOffice Spreadsheets

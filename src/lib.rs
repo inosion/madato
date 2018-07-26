@@ -81,6 +81,7 @@ fn can_mk_data() {
             linkedhashmap![s!("foo") => s!("seventy"), s!("bar") => s!("barry"), s!("nop") => s!("no")],
             linkedhashmap![s!("bar") => s!("col has no foo")],
         ],
+        &None
     );
 
     // the | below is the margin
@@ -111,7 +112,7 @@ fn can_mk_data() {
 /// `keys` - for the linkedhashmaps. keys determine cell order in a row
 /// `data` - Vector of TableRows
 ///
-pub fn mk_data(heading_data: &[(String, usize)], data: &[TableRow<String, String>]) -> String {
+pub fn mk_data(heading_data: &[(String, usize)], data: &[TableRow<String, String>], filter: &Option<KVFilter>) -> String {
     let ret: Vec<String> = data
         .iter()
         .map(|hm| {
@@ -139,6 +140,7 @@ fn can_make_table() {
             linkedhashmap![s!("foo") => s!("seventy"), s!("bar") => s!("barry"), s!("nop") => s!("no")],
             linkedhashmap![s!("bar") => s!("col has no foo")],
         ],
+        &None
     );
 
     // the | below is the margin
@@ -161,7 +163,7 @@ fn can_make_table() {
 /// `headings` - Which values, in that order, to use as the table output
 /// `data`     - Vector of TableRows
 ///
-pub fn mk_table(headings: &[String], data: &[TableRow<String, String>]) -> String {
+pub fn mk_table(headings: &[String], data: &[TableRow<String, String>], filter: &Option<KVFilter>) -> String {
     // for each heading, find the "widest" heading, or value
 
     let heading_data: Vec<(String, usize)> = headings
@@ -169,7 +171,7 @@ pub fn mk_table(headings: &[String], data: &[TableRow<String, String>]) -> Strin
         .map(|h| {
             (
                 h.clone(),
-                data.iter().fold(h.len(), | max, hm |  // how to return a 
+                data.iter().fold(h.len(), | max, hm |
                                    cmp::max(max,
                                      match hm.get(h)  {
                                        Some(v) => v.to_string().len(),
@@ -183,7 +185,7 @@ pub fn mk_table(headings: &[String], data: &[TableRow<String, String>]) -> Strin
     format!(
         "{}\n{}",
         mk_header(&heading_data),
-        mk_data(&heading_data, data)
+        mk_data(&heading_data, data, filter)
     )
 }
 
@@ -193,7 +195,8 @@ fn can_make_table_all_cols() {
         linkedhashmap![s!("foo") => s!("ggg"), s!("bar") => s!("fred"), s!("nop") => s!("no")],
         linkedhashmap![s!("foo") => s!("seventy"), s!("bar") => s!("barry"), s!("nop") => s!("no")],
         linkedhashmap![s!("bar") => s!("col has no foo")],
-    ]);
+    ],
+    &None);
 
     // the | below is the margin
     let expected = "
@@ -216,8 +219,8 @@ fn can_make_table_all_cols() {
 ///
 /// `data`     - Vector of TableRows
 ///
-pub fn mk_table_all_cols(data: &[TableRow<String, String>]) -> String {
+pub fn mk_table_all_cols(data: &[TableRow<String, String>], filter: &Option<KVFilter>) -> String {
     let keys: Vec<String> = collect_headers(data).into_iter().collect();
 
-    mk_table(&keys, data)
+    mk_table(&keys, data, filter)
 }

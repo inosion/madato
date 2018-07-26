@@ -32,7 +32,7 @@ fn can_yaml_to_md() {
     ||  this   |someother value here|100 | ta da |"
         .strip_margin();
 
-    let tbl_md = mk_md_table_from_yaml(&yml_data);
+    let tbl_md = mk_md_table_from_yaml(&yml_data, &None);
     assert!(tbl_md == expected);
 }
 
@@ -63,12 +63,12 @@ fn can_yaml_to_md_with_headings() {
     ||  this   |someother value here| ta da |"
         .strip_margin();
 
-    let tbl_md = mk_md_table_from_yaml_with_headings(&headings, &yml_data);
+    let tbl_md = mk_md_table_from_yaml_with_headings(&headings, &yml_data, &None);
     assert!(tbl_md == expected);
 }
 
-pub fn mk_md_table_from_yaml_with_headings(headings: &[String], yaml: &str) -> String {
-    mk_table(&headings, &load_yaml(yaml))
+pub fn mk_md_table_from_yaml_with_headings(headings: &[String], yaml: &str, filter: &Option<KVFilter>) -> String {
+    mk_table(&headings, &load_yaml(yaml), filter)
 }
 
 fn load_yaml(yaml: &str) -> Table<String, String> {
@@ -88,10 +88,11 @@ fn load_yaml(yaml: &str) -> Table<String, String> {
 }
 
 #[wasm_bindgen]
-pub fn mk_md_table_from_yaml_with_headings_list(headings: &str, yaml: &str) -> String {
+pub fn mk_md_table_from_yaml_with_headings_list(headings: &str, yaml: &str, filter: &Option<KVFilter>) -> String {
     mk_md_table_from_yaml_with_headings(
         &headings.split(',').map(String::from).collect::<Vec<_>>(),
         yaml,
+        filter
     )
 }
 
@@ -122,8 +123,8 @@ pub fn mk_md_table_from_yaml_with_headings_list(headings: &str, yaml: &str) -> S
 /// ```
 ///
 #[wasm_bindgen]
-pub fn mk_md_table_from_yaml(yaml: &str) -> String {
-    mk_table_all_cols(&load_yaml(yaml))
+pub fn mk_md_table_from_yaml(yaml: &str, filter: &Option<KVFilter>) -> String {
+    mk_table_all_cols(&load_yaml(yaml), filter)
 }
 
 /// Given results of tables, throw them back out as YAML
