@@ -1,17 +1,17 @@
 #![feature(
     use_extern_macros, wasm_custom_section, wasm_import_module, iterator_flatten, slice_patterns,
-    extern_prelude,
-    serde_impl
+    extern_prelude, serde_impl
 )]
 
 extern crate calamine;
 extern crate indexmap;
 
-extern crate serde_derive;
+extern crate linked_hash_map;
+extern crate regex;
 extern crate serde;
+extern crate serde_derive;
 extern crate serde_yaml;
 extern crate wasm_bindgen;
-extern crate linked_hash_map;
 
 #[macro_use]
 pub mod utils;
@@ -20,6 +20,7 @@ pub mod types;
 pub mod yaml;
 
 use indexmap::IndexSet;
+use regex::Regex;
 use std::cmp;
 use types::*;
 
@@ -81,7 +82,7 @@ fn can_mk_data() {
             linkedhashmap![s!("foo") => s!("seventy"), s!("bar") => s!("barry"), s!("nop") => s!("no")],
             linkedhashmap![s!("bar") => s!("col has no foo")],
         ],
-        &None
+        &None,
     );
 
     // the | below is the margin
@@ -112,7 +113,11 @@ fn can_mk_data() {
 /// `keys` - for the linkedhashmaps. keys determine cell order in a row
 /// `data` - Vector of TableRows
 ///
-pub fn mk_data(heading_data: &[(String, usize)], data: &[TableRow<String, String>], filter: &Option<KVFilter>) -> String {
+pub fn mk_data(
+    heading_data: &[(String, usize)],
+    data: &[TableRow<String, String>],
+    render_options: &Option<RenderOptions>,
+) -> String {
     let ret: Vec<String> = data
         .iter()
         .map(|hm| {
@@ -131,16 +136,38 @@ pub fn mk_data(heading_data: &[(String, usize)], data: &[TableRow<String, String
     ret.join("\n")
 }
 
+fn tablerow_filter(row: &TableRow<String, String>, kvfilt: Option<KVFilter>) -> bool {
+    match kvfilt {
+        None => true,
+        Some(filt) => {
+            let key_re = Regex::new(filt.key.as_str()).unwrap();
+            let val_re = Regex::new(filt.value.as_str()).unwrap();
+
+            row.keys()
+                .filter(|k| {
+                    key_re.is_match(k) && match row.get(k.clone()) {
+                        Some(v) => val_re.is_match(v),
+                        None => false,
+                    }
+                })
+                .collect()
+                .len() > 0
+        }
+    }
+}
+
 #[test]
 fn can_make_table() {
     let tbl_md = mk_table(
-        &vec![s!("foo"), s!("bar")],
         &vec![
             linkedhashmap![s!("foo") => s!("ggg"), s!("bar") => s!("fred"), s!("nop") => s!("no")],
             linkedhashmap![s!("foo") => s!("seventy"), s!("bar") => s!("barry"), s!("nop") => s!("no")],
             linkedhashmap![s!("bar") => s!("col has no foo")],
         ],
-        &None
+        &Some(RenderOptions {
+            headings: Some(vec![s!("foo"), s!("bar")]),
+            ..Default::default()
+        }),
     );
 
     // the | below is the margin
@@ -155,48 +182,16 @@ fn can_make_table() {
     assert!(tbl_md == expected);
 }
 
-/// Takes an ordered list of headings and a Vector of TableRows, the cell values
-/// and produces a formatted Markdown Table.
-///
-/// # Arguments
-///
-/// `headings` - Which values, in that order, to use as the table output
-/// `data`     - Vector of TableRows
-///
-pub fn mk_table(headings: &[String], data: &[TableRow<String, String>], filter: &Option<KVFilter>) -> String {
-    // for each heading, find the "widest" heading, or value
-
-    let heading_data: Vec<(String, usize)> = headings
-        .iter()
-        .map(|h| {
-            (
-                h.clone(),
-                data.iter().fold(h.len(), | max, hm |
-                                   cmp::max(max,
-                                     match hm.get(h)  {
-                                       Some(v) => v.to_string().len(),
-                                       None    => 0
-                                     }
-                                    )),
-            )
-        })
-        .collect::<Vec<(String, usize)>>();
-
-    format!(
-        "{}\n{}",
-        mk_header(&heading_data),
-        mk_data(&heading_data, data, filter)
-    )
-}
-
 #[test]
 fn can_make_table_all_cols() {
-    let tbl_md = mk_table_all_cols(&vec![
-        linkedhashmap![s!("foo") => s!("ggg"), s!("bar") => s!("fred"), s!("nop") => s!("no")],
-        linkedhashmap![s!("foo") => s!("seventy"), s!("bar") => s!("barry"), s!("nop") => s!("no")],
-        linkedhashmap![s!("bar") => s!("col has no foo")],
-    ],
-    &None);
+    let tbl_md = mk_table(
+        &vec![
+            linkedhashmap![s!("foo") => s!("ggg"), s!("bar") => s!("fred"), s!("nop") => s!("no")],
+            linkedhashmap![s!("foo") => s!("seventy"), s!("bar") => s!("barry"), s!("nop") => s!("no")],
+            linkedhashmap![s!("bar") => s!("col has no foo")],
+        ],
+        &None,
+    );
 
     // the | below is the margin
     let expected = "
@@ -212,15 +207,49 @@ fn can_make_table_all_cols() {
     assert!(tbl_md == expected);
 }
 
-/// Takes a Vector of TableRows, and prints a Markdown Table
+/// Takes an ordered list of headings and a Vector of TableRows, the cell values
 /// and produces a formatted Markdown Table.
 ///
 /// # Arguments
 ///
-/// `data`     - Vector of TableRows
+/// `headings`       - Which values, in that order, to use as the table output
+/// `data`           - Vector of TableRows
+/// `render_options` - Set of "config" that drives filtering, ordering, output.
 ///
-pub fn mk_table_all_cols(data: &[TableRow<String, String>], filter: &Option<KVFilter>) -> String {
-    let keys: Vec<String> = collect_headers(data).into_iter().collect();
+pub fn mk_table(
+    data: &[TableRow<String, String>],
+    render_options: &Option<RenderOptions>,
+) -> String {
+    // for each heading, find the "widest" heading, or value
 
-    mk_table(&keys, data, filter)
+    let headings = match render_options {
+        Some(RenderOptions {
+            headings: Some(h), ..
+        }) => h.clone(),
+        _ => collect_headers(data).into_iter().collect(),
+    };
+
+    let heading_data: Vec<(String, usize)> = headings
+        .iter()
+        .map(|h| {
+            (
+                h.clone(),
+                data.iter().fold(h.len(), |max, hm| {
+                    cmp::max(
+                        max,
+                        match hm.get(h) {
+                            Some(v) => v.to_string().len(),
+                            None => 0,
+                        },
+                    )
+                }),
+            )
+        })
+        .collect::<Vec<(String, usize)>>();
+
+    format!(
+        "{}\n{}",
+        mk_header(&heading_data),
+        mk_data(&heading_data, data, render_options)
+    )
 }

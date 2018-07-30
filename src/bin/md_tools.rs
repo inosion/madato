@@ -75,26 +75,27 @@ fn yaml_file_to_md(filename: String) -> Result<String, String> {
 }
 
 fn get_sheet_names(filename: String) {
-  for s in list_sheet_names(filename).unwrap() {
-    println!("{}",s);
-  }
+    for s in list_sheet_names(filename).unwrap() {
+        println!("{}", s);
+    }
 }
 
 fn main() -> Result<(), String> {
-
     let args: Args = Docopt::new(USAGE)
         .and_then(|d| d.deserialize())
         .unwrap_or_else(|e| e.exit());
 
     if args.cmd_sheetlist {
-      get_sheet_names(args.arg_filename);
-      return Ok(());
-    } 
+        get_sheet_names(args.arg_filename);
+        return Ok(());
+    }
 
     let output_string = match args.flag_outputtype {
         OutputType::MD => match args.flag_type {
             Some(FileType::YAML) => yaml_file_to_md(args.arg_filename),
-            Some(FileType::XLSX) => spreadsheet_to_md(args.arg_filename, args.flag_sheetname, &None),
+            Some(FileType::XLSX) => {
+                spreadsheet_to_md(args.arg_filename, args.flag_sheetname, &None)
+            }
             _ => Err(String::from("not implemented")),
         },
         OutputType::YAML => {

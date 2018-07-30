@@ -2,34 +2,44 @@
 
 use calamine::{open_workbook_auto, DataType, Reader};
 
-use mk_table_all_cols;
-use types::{TableRow, NamedTable, ErroredTable, KVFilter};
+use mk_table;
+use types::{ErroredTable, NamedTable, RenderOptions, TableRow};
 
 fn table_to_md_generator(
-    table: Result<NamedTable<String,String>, ErroredTable>,
+    table: Result<NamedTable<String, String>, ErroredTable>,
     print_name: bool,
-    filter: &Option<KVFilter>
+    render_options: &Option<RenderOptions>,
 ) -> String {
     match table {
         Err((name, error)) => format!("Sheet `{}` errored: {}", name, error),
         Ok((name, table_data)) => {
             if print_name {
-                format!("**{}**\n{}", name, mk_table_all_cols(&table_data, &filter))
+                format!("**{}**\n{}", name, mk_table(&table_data, render_options))
             } else {
-                mk_table_all_cols(&table_data, &filter)
+                mk_table(&table_data, render_options)
             }
         }
     }
 }
 
-pub fn spreadsheet_to_md(filename: String, sheet_name: Option<String>, filter: &Option<KVFilter>) -> Result<String, String> {
+pub fn spreadsheet_to_md(
+    filename: String,
+    sheet_name: Option<String>,
+    render_options: &Option<RenderOptions>,
+) -> Result<String, String> {
     let results = read_excel(filename, sheet_name);
     if results.len() <= 1 {
-        Ok(table_to_md_generator(results[0].clone(), false, filter))
+        Ok(table_to_md_generator(
+            results[0].clone(),
+            false,
+            render_options,
+        ))
     } else {
         Ok(results
             .iter()
-            .map(|table_result| table_to_md_generator(table_result.clone(), true, filter))
+            .map(|table_result| {
+                table_to_md_generator(table_result.clone(), true, &render_options.clone())
+            })
             .collect::<Vec<String>>()
             .join("\n\n"))
     }
@@ -38,7 +48,7 @@ pub fn spreadsheet_to_md(filename: String, sheet_name: Option<String>, filter: &
 pub fn read_excel(
     filename: String,
     sheet_name: Option<String>,
-) -> Vec<Result<NamedTable<String,String>, ErroredTable>> {
+) -> Vec<Result<NamedTable<String, String>, ErroredTable>> {
     // opens a new workbook
     let mut workbook = open_workbook_auto(filename).expect("Cannot open file");
 
@@ -54,7 +64,7 @@ pub fn read_excel(
         workbook.sheet_names().to_owned()
     };
 
-    let sheets: Vec<Result<NamedTable<String,String>, ErroredTable>> = sheet_names
+    let sheets: Vec<Result<NamedTable<String, String>, ErroredTable>> = sheet_names
         .iter()
         .map(|name| {
             let maybe_sheet = workbook.worksheet_range(name);

@@ -1,7 +1,8 @@
+use super::mk_table;
+use linked_hash_map::LinkedHashMap;
+
 use types::*;
 use wasm_bindgen::prelude::*;
-use linked_hash_map::LinkedHashMap;
-use super::{mk_table, mk_table_all_cols};
 
 #[allow(unused_imports)]
 use utils::StripMargin;
@@ -63,37 +64,30 @@ fn can_yaml_to_md_with_headings() {
     ||  this   |someother value here| ta da |"
         .strip_margin();
 
-    let tbl_md = mk_md_table_from_yaml_with_headings(&headings, &yml_data, &None);
-    assert!(tbl_md == expected);
-}
+    let render_options = RenderOptions {
+        headings: Some(headings),
+        ..Default::default()
+    };
 
-pub fn mk_md_table_from_yaml_with_headings(headings: &[String], yaml: &str, filter: &Option<KVFilter>) -> String {
-    mk_table(&headings, &load_yaml(yaml), filter)
+    let tbl_md = mk_md_table_from_yaml(&yml_data, &Some(render_options));
+
+    println!("::expected\n{}\n\nreceived:{}", expected, tbl_md);
+    assert!(tbl_md == expected);
 }
 
 fn load_yaml(yaml: &str) -> Table<String, String> {
     let deserialized_map: Table<String, String> = serde_yaml::from_str(&yaml).unwrap();
     deserialized_map
-/*
-    deserialized_map
-        .iter()
-        .map(|btree| {
-            btree
-                .iter()
-                .map(|(x, y)| (x.clone(), y.clone()))
-                .collect::<TableRow<String, String>>()
-        })
-        .collect::<Vec<_>>()
-        */
 }
 
 #[wasm_bindgen]
-pub fn mk_md_table_from_yaml_with_headings_list(headings: &str, yaml: &str, filter: &Option<KVFilter>) -> String {
-    mk_md_table_from_yaml_with_headings(
-        &headings.split(',').map(String::from).collect::<Vec<_>>(),
-        yaml,
-        filter
-    )
+pub fn md_table_yaml_and_headings(headings: &str, yaml: &str) -> String {
+    // we don't use an indexSet here for headings because the user may want repeats of the columns
+    let render_options = RenderOptions {
+        headings: Some(headings.split(',').map(String::from).collect::<Vec<_>>()),
+        ..Default::default()
+    };
+    mk_table(&load_yaml(yaml), &Some(render_options))
 }
 
 /// Takes a String of YAML. An Array of Maps, 1 Level deep, and returns a Markdown Table
@@ -123,23 +117,21 @@ pub fn mk_md_table_from_yaml_with_headings_list(headings: &str, yaml: &str, filt
 /// ```
 ///
 #[wasm_bindgen]
-pub fn mk_md_table_from_yaml(yaml: &str, filter: &Option<KVFilter>) -> String {
-    mk_table_all_cols(&load_yaml(yaml), filter)
+pub fn mk_md_table_from_yaml(yaml: &str, render_options: &Option<RenderOptions>) -> String {
+    mk_table(&load_yaml(yaml), render_options)
 }
 
 /// Given results of tables, throw them back out as YAML
-pub fn mk_yaml_from_table_result(tables: Vec<Result<NamedTable<String,String>, ErroredTable>>) -> String {
-
-    let table_map: LinkedHashMap<String,Table<String,String>> = tables
-    .into_iter()
-    .filter_map(Result::ok)
-    .collect();
+pub fn mk_yaml_from_table_result(
+    tables: Vec<Result<NamedTable<String, String>, ErroredTable>>,
+) -> String {
+    let table_map: LinkedHashMap<String, Table<String, String>> =
+        tables.into_iter().filter_map(Result::ok).collect();
 
     // if we only have one table, strip off the key (get just the value)
     if table_map.len() == 1 {
-        serde_yaml::to_string(&table_map.values().next().unwrap()).unwrap()   
+        serde_yaml::to_string(&table_map.values().next().unwrap()).unwrap()
     } else {
         serde_yaml::to_string(&table_map).unwrap()
     }
-
 }
