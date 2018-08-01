@@ -118,8 +118,15 @@ pub fn mk_data(
     data: &[TableRow<String, String>],
     render_options: &Option<RenderOptions>,
 ) -> String {
-    let ret: Vec<String> = data
-        .iter()
+
+    let filters: Option<Vec<KVFilter>> = render_options.clone().and_then(|ro| ro.filters);
+
+    let iter: Box<Iterator<Item=&TableRow<String,String>>> = match filters { 
+        None => Box::new(data.iter()),
+        Some(vfilts) => Box::new(data.iter().filter(|row| filter_tablerows(row, &vfilts))),
+    };
+
+    let ret: Vec<String> = iter
         .map(|hm| {
             heading_data.iter().fold(String::from("|"), |res, k| {
                 let s = match hm.get(&k.0) {
@@ -136,24 +143,31 @@ pub fn mk_data(
     ret.join("\n")
 }
 
-fn tablerow_filter(row: &TableRow<String, String>, kvfilt: Option<KVFilter>) -> bool {
-    match kvfilt {
-        None => true,
-        Some(filt) => {
-            let key_re = Regex::new(filt.key.as_str()).unwrap();
-            let val_re = Regex::new(filt.value.as_str()).unwrap();
 
-            row.keys()
-                .filter(|k| {
-                    key_re.is_match(k) && match row.get(k.clone()) {
-                        Some(v) => val_re.is_match(v),
-                        None => false,
-                    }
-                })
-                .collect()
-                .len() > 0
-        }
-    }
+fn filter_tablerows(row: &TableRow<String, String>, vfilters: &Vec<KVFilter>) -> bool{
+    vfilters.iter().any(|f| tablerow_filter(row, f))
+}
+
+///
+/// Per row filter. Takes a regex and the row.
+/// If the "regex" for a key and a value returns one or more
+/// matches (a key - to a cell), then this row is "kept". (returns true)
+///
+/// If the regex pair in KVFilter returns no matches across all cells the this
+/// row is filtered out (return false)
+fn tablerow_filter(row: &TableRow<String, String>, filt: &KVFilter) -> bool {
+        let key_re = Regex::new(filt.key.as_str()).unwrap();
+        let val_re = Regex::new(filt.value.as_str()).unwrap();
+
+        row.keys()
+            .filter(|k| {
+                key_re.is_match(k) && match row.get(k.clone()) {
+                    Some(v) => val_re.is_match(v),
+                    None => false,
+                }
+            })
+            .collect::<Vec<_>>()
+            .len() > 0
 }
 
 #[test]

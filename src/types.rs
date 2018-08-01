@@ -15,7 +15,7 @@ pub type ErroredTable = (String, String);
  * Filtering
  */
 
-#[derive(Default, Clone)]
+#[derive(Clone)]
 pub struct KVFilter {
     pub key: Regex,
     pub value: Regex,
@@ -23,10 +23,13 @@ pub struct KVFilter {
 
 impl KVFilter {
     pub fn new(key: String, value: String) -> KVFilter {
-                    let key_re = Regex::new(&key).unwrap();
-                    let value_re = Regex::new(&value).unwrap();
+        let key_re = Regex::new(&key).unwrap();
+        let value_re = Regex::new(&value).unwrap();
 
-        KVFilter{ key: key_re, value: value_re }
+        KVFilter {
+            key: key_re,
+            value: value_re,
+        }
     }
 }
 /**e
