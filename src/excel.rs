@@ -24,10 +24,9 @@ fn table_to_md_generator(
 
 pub fn spreadsheet_to_md(
     filename: String,
-    sheet_name: Option<String>,
     render_options: &Option<RenderOptions>,
 ) -> Result<String, String> {
-    let results = read_excel(filename, sheet_name);
+    let results = read_excel(filename, render_options.clone().and_then(|r| r.sheet_name));
     if results.len() <= 1 {
         Ok(table_to_md_generator(
             results[0].clone(),
@@ -106,7 +105,7 @@ pub fn read_excel(
 /// Return a Vec<String> of Sheet Names
 ///
 pub fn list_sheet_names(filename: String) -> Result<Vec<String>, String> {
-    let mut workbook = open_workbook_auto(filename).expect("Could not open the file");
+    let workbook = open_workbook_auto(filename).expect("Could not open the file");
     Ok(workbook.sheet_names().to_owned())
 }
 
