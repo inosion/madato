@@ -105,7 +105,7 @@ pub fn read_excel(
 /// Return a Vec<String> of Sheet Names
 ///
 pub fn list_sheet_names(filename: String) -> Result<Vec<String>, String> {
-    let mut workbook = open_workbook_auto(filename).expect("Could not open the file");
+    let workbook = open_workbook_auto(filename).expect("Could not open the file");
     Ok(workbook.sheet_names().to_owned())
 }
 

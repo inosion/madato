@@ -1,76 +1,114 @@
 ![travis-ci](https://travis-ci.org/inosion/markdown-tools.svg?branch=master)
 
+# madato
 
-![under_construction.png](images/under_construction.png)
+***a tabular data rust library, and command line utility***
 
-**The RUST and JS APIs of this libraray are not yet final.**
+The tools is primarly centered around getting tabular data (spreadsheets, CSVs)
+into Markdown. 
 
-If you wish to use this lib (other than the command line); create an issue for a stable API and it will get priority. Currently, focus is on features, and the APIs will "arise" from that.
+It currently supports:
+- Reading a XLS*, ODS Spreadsheet or YAML file `-- to -->` Markdown
+- Reading a XLS*, ODS Spreadsheet `-- to -->` Markdown
 
-# Markdown Tooling
+When generating the output:
+- Filter the Rows using basic Regex over Key/Value pairs
+- Limit the columns to named headings
+- Re-order the columns, or repeat them using the same column feature
+- Only generate a table for a named "sheet" (applicable for the XLS/ODS formats)
 
-* Supports making Markdown Tables from tabular data; YAML files and Excel/OpenOffice Spreadsheets
-* Supports converting an Excel/ODS Spreadsheet to a YAML file.
+Madato is: 
+- Command Line Tool (Windows, Mac, Linux) - good for CI/CD preprocessing
+- Rust Library - Good for integration into Rust Markdown tooling
+- Node JS WASM API - To be used later for Atom and VSCode Extensions
 
-provided as 
+Madato expects that every column has a heading row. That is, the first row are headings/column names. If a cell in that first row is blank, it will create `NULL0..NULLn` entries as required.
 
-* Command Line Tool (Windows, Mac, Linux)
-* Rust API
-* Node JS WASM API
+## Examples
 
-## Tables
-* Converts a YAML file, or a Spreadsheet to a Markdown Table
-* Spreadsheets - via Calamine
-    - excel like (xls, xlsx, xlsm, xlsb, xla, xlam)
-    - opendocument spreadsheets (ods)
-* YAML (Array of Maps)
-
-# TL;DR For Install and Usage
-
-* Cut and Paste some random tables from some HTML file, save it to Excel / OpenOffice. and run this tool, it will give you a nicely formatted Markdown Table of the same :-D
-
-## Commandline
-
-### Excel, (XLSX, XLS, XLSM, XLSB, ODS)  to Markdown
-
-`md_tools table -t xlsx test/sample_multi_sheet.xslx.xlsx` 
-
-See [test/sample_multi_sheet.xslx.xlsx](test/sample_multi_sheet.xslx.xlsx) for the original file.
-
+* Extract the `3rd Sheet` sheet from an MS Excel Document
 ```
-**Sheet1**
-|                         Rank                         |Change|  Language  | Share |Trend |
-|------------------------------------------------------|------|------------|-------|------|
-|                          1                           |      |   Python   |23.59 %|+5.5 %|
-|                          2                           |      |    Java    |22.4 % |-0.5 %|
-|                          3                           |      | Javascript |8.49 % |+0.2 %|
-|                          4                           |      |    PHP     |7.93 % |-1.5 %|
-|                          5                           |      |     C#     |7.84 % |-0.5 %|
-|                          6                           |      |   C/C++    |6.28 % |-0.8 %|
-|                          7                           |      |     R      |4.18 % |+0.0 %|
-
-...
-
-**second_sheet**
-|       Sample XLS Data Type        |                The Resulting Value                 |        Random Stuff        |        Heading 4         |
-|-----------------------------------|----------------------------------------------------|----------------------------|--------------------------|
-|           >> =”Formula”           |                      Formula                       |                            |                          |
-|         >> Simple String          |                       Value                        |                            |         << empty         |
-|          >> Some Number           |                 0.0977795336595647                 |                            |                          |
-|       >> Unicode Characters       |                    😕 ← Emoticon                    |        >> Div by 0         |         #DIV/0!          |
-
-...
-
-**3rd Sheet**
+08:39 $ target/debug/madato table --type xlsx test/sample_multi_sheet.xlsx --sheetname "3rd Sheet"
 |col1|col2| col3 |col4 |                         col5                          |NULL5|
 |----|----|------|-----|-------------------------------------------------------|-----|
 | 1  |that| are  |wider|  value ‘aaa’ is in the next cell, but has no heading  | aaa |
 |than|the |header| row |       (open the spreadsheet to see what I mean)       |     |
+```
+
+* Extract and reorder just 3 Columns
+```
+08:42 $ target/debug/madato table --type xlsx test/sample_multi_sheet.xlsx --sheetname "3rd Sheet" -c col2 -c col3 -c NULL5
+|col2| col3 |NULL5|
+|----|------|-----|
+|that| are  | aaa |
+|the |header|     |
+```
+* Pull from the `second_sheet` sheet
+* Only extract `Heading 4` column
+* Use a Filter, where `Heading 4` values must only have a letter or number.
 
 ```
+08:48 $ target/debug/madato table --type xlsx test/sample_multi_sheet.xlsx --sheetname second_sheet -c "Heading 4" -f 'Heading 4=[a-zA-Z0-9]'
+|        Heading 4         |
+|--------------------------|
+|         << empty         |
+|*Some Bolding in Markdown*|
+|   `escaped value` foo    |
+|           0.22           |
+|         #DIV/0!          |
+|  “This cell has quotes”  |
+|       😕 ← Emoticon       |
+```
+
+* Filtering on a Column, ensuring that a "+" is there in `Trend` Column
+
+```
+09:00 $ target/debug/madato table --type xlsx test/sample_multi_sheet.xlsx --sheetname Sheet1 -c Rank -c Language -c Trend -f "Trend=\+"
+|                         Rank                         |  Language  |Trend |
+|------------------------------------------------------|------------|------|
+|                          1                           |   Python   |+5.5 %|
+|                          3                           | Javascript |+0.2 %|
+|                          7                           |     R      |+0.0 %|
+|                          12                          | TypeScript |+0.3 %|
+|                          16                          |   Kotlin   |+0.5 %|
+|                          17                          |     Go     |+0.3 %|
+|                          20                          |    Rust    |+0.0 %|
+```
+
+## Internals
+madato uses:
+- [calamine](https://github.com/tafia/calamine) for reading XLS and ODS sheets
+- [wasm bindings](https://github.com/rustwasm/wasm-bindgen) to created JS API versions of the Rust API
+- [regex]() for filtering, and [serde]() for serialisation.
+
+## Tips
+
+* I have found that copying the "table" I want from a website: HTML, to a spreadsheet, then through `madato` gives an excellent Markdown table of the original.
+
+## Rust API
+
+## JS API
+
+## More Commandline
+
+### Sheet List
+
+You can list the "sheets" of an XLS*, ODS file with 
+
+```
+$ madato sheetlist test/sample_multi_sheet.xlsx 
+Sheet1
+second_sheet
+3rd Sheet
+```
+
 ### YAML to Markdown 
 
-`md_tools table -t yaml test/www-sample/test.yml`
+Madato reads a "YAML" file, in the same way it can a Spreadsheet.
+This is useful for "keeping" tabular data in your source repository, and perhaps not
+the XLS.
+
+`madato table -t yaml test/www-sample/test.yml`
 
 ```
 |col3| col4  |  data1  |       data2        |
@@ -80,10 +118,14 @@ See [test/sample_multi_sheet.xslx.xlsx](test/sample_multi_sheet.xslx.xlsx) for t
 |100 | ta da |  this   |someother value here|
 ```
 
+*Please see the [test/www-sample/test.yml](test/www-sample/test.yml) file for the expected layout of this file*
+
 ### Excel/ODS to YAML
 
+Changing the output from default "Markdown (MD)" to "YAML", you get a Markdown file of the Spreadsheet.
+
 ```
-md_tools table -t xlsx test/sample_multi_sheet.xslx.xlsx -s Sheet1 -o yaml
+madato table -t xlsx test/sample_multi_sheet.xslx.xlsx -s Sheet1 -o yaml
 ---
 - Rank: "1"
   Change: ""
@@ -105,53 +147,6 @@ md_tools table -t xlsx test/sample_multi_sheet.xslx.xlsx -s Sheet1 -o yaml
 If you omit the sheet name, it will dump all sheets into an order map of array of maps.
 
 
-## Rust
-
-`TODO` - Publish on crates.io
-
-## JavaScript
-
-`TODO` - Publish on npm
-
-# Details
-
-## Table Maker
-
-Converts YAML to a Markdown Table String
-```
-- data1: somevalue
-  data2: someother value here
-  col3: 100 
-  col4: gar gar
-- data1: that
-  data2: nice
-  col3: 190x 
-- data1: this
-  data2: someother value here
-  col3: 100 
-  col4: ta da
-```
-
-to 
-
-```
-|col3| col4  |  data1  |       data2        |
-|----|-------|---------|--------------------|
-|100 |gar gar|somevalue|someother value here|
-|190x|       |  that   |        nice        |
-|100 | ta da |  this   |someother value here|
-
-```
-
-And as Markdown:
-
-|col3| col4  |  data1  |       data2        |
-|----|-------|---------|--------------------|
-|100 |gar gar|somevalue|someother value here|
-|190x|       |  that   |        nice        |
-|100 | ta da |  this   |someother value here|
-
-
 ### Features
 
 * `[x]` Reads a formatted YAML string and renders a Markdown Table
@@ -160,12 +155,14 @@ And as Markdown:
 * `[X]` Read an XLSX file and produce a Markdown Table
 * `[X]` Read an ODS file and produce a Markdown Table
 * `[ ]` Read a CSV, TSV, PSV (etc) file and produce a Markdown Table
-* `[ ]` Support Nested Structures in the YAML imput
+* `[ ]` Support Nested Structures in the YAML input
+* `[ ]` Read a Markdown File, and select the "table" and turn it back into YAML
 
 ### Future Goals
 * Finish the testing and publishing of the JS WASM Bindings. (PS - it works.. 
   (see : [test/www-sample](test/www-sample) and the [Makefile](Makefile) )
 * Embed the "importing" of YAML, CSV and XLS* files into the `mume` Markdown Preview Enhanced Plugin. [https://shd101wyy.github.io/markdown-preview-enhanced/](https://shd101wyy.github.io/markdown-preview-enhanced/) So we can have Awesome Markdown Documents.
+* Provide a `PreRenderer` for `[rust-lang-nursery/mdBook](https://github.com/rust-lang-nursery/mdBook) to "import" MD tables from files.
 
 ### Known Issues
 * A Spreadsheet Cell with a Date will come out as the "magic" Excel date number :-( - https://github.com/tafia/calamine/issues/116
