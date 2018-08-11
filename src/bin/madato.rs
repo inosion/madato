@@ -1,25 +1,28 @@
+#![feature(slice_patterns)]
 #[macro_use]
 extern crate serde_derive;
 extern crate docopt;
-extern crate markdown_tools;
+extern crate madato;
 
 use docopt::Docopt;
-use markdown_tools::excel::*;
-use markdown_tools::yaml::*;
+use madato::excel::*;
+use madato::yaml::*;
 use std::fs::File;
 use std::io::prelude::*;
+use madato::types::*;
 
 const USAGE: &str = "
-Markdown Tools
+madato utility - Tabular Data Helper
+
+SpreadSheet <--> YAML <--> JSON <--> Markdown 
 
 Usage:
-  md-tools table -t <type> [-p <jsonpath>] [-s <sheetname>] [-o <outputtype>] <filename>
-  md-tools sheetlist <filename>
-  md-tools (-h | --help)
-  md-tools --version
+  madato table -t <type> [-s <sheetname>] [-o <outputtype>] [-f <filters>...] [-c <column>...] <filename>
+  madato sheetlist <filename>
+  madato (-h | --help)
+  madato --version
 
 Options:
-
   table                         Generate Makrdown or YAML tables from a Source.
   sheetlist                     Read an Excel/ODS file and list out the names in the sheet.
 
@@ -28,18 +31,25 @@ Options:
   -t --type <type>              Input Type.
   -s --sheetname <sheetname>    When a Spreadsheet, restrict to just one of the sheets.
   -o --outputtype <outputtype>  MD (Markdown) or YAML. [default: MD]
-  -f --filter <expr>            Filter data in the results based on a simple, key=value
-
+  -f --filters <filters>        Filter data in the results based on a simple, key=value
+  -c --columns <column>         List of Columns to output 'only'
   -h --help                     Show this screen.
   --version                     Show version.
 
-Example:
+Filtering Example:
   Basic Filtering support occurs on a row by row basis where the key=value pair need to match.
   Both support a regular expression over the key and or the value.
 
   col[0-9]=val.*
   columnname=A[0-9]
+  .*=[0-9] id=.*
+
+Column Limit:
+  Limit the Columns that are printed. (note, filtering occurs to ALL columns, before the output limit)
+  col1 col2 col3
+  id amount
 ";
+
 
 #[derive(Debug, Deserialize)]
 struct Args {
@@ -50,6 +60,8 @@ struct Args {
     flag_type: Option<FileType>,
     flag_sheetname: Option<String>,
     flag_outputtype: OutputType,
+    flag_filters:    Vec<String>,
+    flag_columns:    Vec<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -65,13 +77,27 @@ enum OutputType {
     MD,
 }
 
-fn yaml_file_to_md(filename: String) -> Result<String, String> {
+
+pub fn version() -> String {
+    let (maj, min, pat) = (
+        option_env!("CARGO_PKG_VERSION_MAJOR"),
+        option_env!("CARGO_PKG_VERSION_MINOR"),
+        option_env!("CARGO_PKG_VERSION_PATCH"),
+    );
+    match (maj, min, pat) {
+        (Some(maj), Some(min), Some(pat)) =>
+            format!("{}.{}.{}", maj, min, pat),
+        _ => "".to_owned(),
+    }
+}
+
+fn yaml_file_to_md(filename: String, render_options: &Option<RenderOptions>) -> Result<String, String> {
     let mut file = File::open(filename).expect("Unable to open the file");
     let mut contents = String::new();
     file.read_to_string(&mut contents)
         .expect("Unable to read the file");
 
-    Ok(mk_md_table_from_yaml(&contents, &None))
+    Ok(mk_md_table_from_yaml(&contents, render_options))
 }
 
 fn get_sheet_names(filename: String) {
@@ -82,19 +108,42 @@ fn get_sheet_names(filename: String) {
 
 fn main() -> Result<(), String> {
     let args: Args = Docopt::new(USAGE)
-        .and_then(|d| d.deserialize())
+        .and_then(|d| d
+         .version(Some(version()))
+         .deserialize())
         .unwrap_or_else(|e| e.exit());
+
+    // println!("args = {:?}", args);
 
     if args.cmd_sheetlist {
         get_sheet_names(args.arg_filename);
         return Ok(());
-    }
+    };
+
+    let headings = if args.flag_columns.len() > 0 {
+        Some(args.flag_columns)
+    } else {
+        None
+    };
+
+    let filters: Vec<KVFilter> = args.flag_filters.iter().map(|s| {
+
+        static SR :&'static str = "!!_STR_REPLACE_!!";
+        let kv = s.replace("\\=",SR).split("=").map(|s| s.to_string()).collect::<Vec<String>>();
+        KVFilter::new(kv[0].replace(SR,"\\="), kv[1].replace(SR,"\\="))
+    }).collect();
+
+    let render_options = Some(RenderOptions {
+            headings: headings,
+            sheet_name: args.flag_sheetname.clone(),
+            filters: Some(filters)
+        });
 
     let output_string = match args.flag_outputtype {
         OutputType::MD => match args.flag_type {
-            Some(FileType::YAML) => yaml_file_to_md(args.arg_filename),
+            Some(FileType::YAML) => yaml_file_to_md(args.arg_filename, &render_options),
             Some(FileType::XLSX) => {
-                spreadsheet_to_md(args.arg_filename, args.flag_sheetname, &None)
+                spreadsheet_to_md(args.arg_filename, &render_options)
             }
             _ => Err(String::from("not implemented")),
         },

@@ -1,5 +1,5 @@
 [package]
-name = "markdown_tools"
+name = "madato"
 version = "0.4.0"
 authors = ["Ramon Buckland <ramon.buckland@inosion.com>"]
 exclude = [
@@ -12,7 +12,7 @@ exclude = [
 crate-type = ["cdylib", "rlib"]
 
 [[bin]]
-name = "md_tools"
+name = "madato"
 
 [dependencies]
 wasm-bindgen    = "0.2"
