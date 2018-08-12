@@ -47,7 +47,7 @@ pub fn collect_headers(data: &[TableRow<String, String>]) -> IndexSet<String> {
 
 #[test]
 fn can_mk_header() {
-    let hdr = mk_header(&vec![(s!("bard"), 5), (s!("other"), 8)]);
+    let hdr = mk_md_header(&vec![(s!("bard"), 5), (s!("other"), 8)]);
 
     // the | below is the margin
     let expected = "
@@ -61,9 +61,9 @@ fn can_mk_header() {
 ///
 /// # Arguments
 ///
-/// `headings` - vector of headings (column titles over the table)
+/// `headings` - vector of headings (column titles over the table) and their sizes
 ///
-pub fn mk_header(heading_data: &[(String, usize)]) -> String {
+pub fn mk_md_header(heading_data: &[(String, usize)]) -> String {
     let heading: String = heading_data.iter().fold(String::from("|"), |res, h| {
         format!("{}{: ^width$}|", res, h.0, width = h.1)
     });
@@ -76,7 +76,7 @@ pub fn mk_header(heading_data: &[(String, usize)]) -> String {
 
 #[test]
 fn can_mk_data() {
-    let tbl_md = mk_data(
+    let tbl_md = mk_md_data(
         &vec![(s!("foo"), 5), (s!("bar"), 8)],
         &vec![
             linkedhashmap![s!("foo") => s!("ggg"), s!("bar") => s!("fred"), s!("nop") => s!("no")],
@@ -97,11 +97,10 @@ fn can_mk_data() {
 
     assert!(tbl_md == expected);
 }
-
 
 #[test]
 fn can_mk_data_limiting_headers() {
-    let tbl_md = mk_data(
+    let tbl_md = mk_md_data(
         &vec![(s!("foo"), 5), (s!("bar"), 8)],
         &vec![
             linkedhashmap![s!("foo") => s!("ggg"), s!("bar") => s!("fred"), s!("nop") => s!("no")],
@@ -123,10 +122,12 @@ fn can_mk_data_limiting_headers() {
     assert!(tbl_md == expected);
 }
 
-/// Takes an ordered list of tuples; (key, column_width) and a Vector of TableRows, the cell values
+/// Takes an ordered list of tuples; (heading_data) (key, column_width) and a slice of TableRows, the cell values
 /// The TableRow could carry more data than the keys provided. That is, only hm.get(key) will appear in the output.
 ///
-/// returns a string of rows; `\n` separated in the form
+/// returns a string of Markdown rows; `\n` separated in the form, layed out in the
+/// width as per the heading_data.
+///
 ///
 /// ```text
 /// | val1 | val3 | val4 | val5 |
@@ -136,24 +137,27 @@ fn can_mk_data_limiting_headers() {
 ///
 /// # Arguments
 ///
-/// `keys` - for the linkedhashmaps. keys determine cell order in a row
-/// `data` - Vector of TableRows
+/// `heading_data` - Name of column, and the width to use for each row.
+/// `data`         - Vector of TableRows
+/// `render_options` - Set of "config" that drives filtering, ordering, output.
 ///
-pub fn mk_data(
+pub fn mk_md_data(
     heading_data: &[(String, usize)],
     data: &[TableRow<String, String>],
     render_options: &Option<RenderOptions>,
 ) -> String {
-
     let filters: Option<Vec<KVFilter>> = render_options.clone().and_then(|ro| ro.filters);
 
-    let iter: Box<Iterator<Item=&TableRow<String,String>>> = match filters { 
-        None         => Box::new(data.iter()),
-        Some(vfilts) => Box::new(data.iter().filter(move |row| filter_tablerows(row, &vfilts))),
+    let iter: Box<Iterator<Item = &TableRow<String, String>>> = match filters {
+        None => Box::new(data.iter()),
+        Some(vfilts) => Box::new(
+            data.iter()
+                .filter(move |row| filter_tablerows(row, &vfilts)),
+        ),
     };
 
-    let ret: Vec<String> = iter
-        .map(|hm| {
+    let ret: Vec<String> =
+        iter.map(|hm| {
             heading_data.iter().fold(String::from("|"), |res, k| {
                 let s = match hm.get(&k.0) {
                     Some(x) => x.to_string(),
@@ -162,8 +166,7 @@ pub fn mk_data(
 
                 format!("{}{: ^width$}|", res, s, width = k.1)
             })
-        })
-        .collect::<Vec<String>>();
+        }).collect::<Vec<String>>();
 
     // make a new String of all the concatenated fields
     ret.join("\n")
@@ -172,8 +175,8 @@ pub fn mk_data(
 ///
 /// For every filter im the Vec of filters, return true, immediately
 /// if the tablerow passes the filter. (ignore all other filters)
-/// 
-fn filter_tablerows(row: &TableRow<String, String>, vfilters: &Vec<KVFilter>) -> bool{
+///
+fn filter_tablerows(row: &TableRow<String, String>, vfilters: &Vec<KVFilter>) -> bool {
     vfilters.iter().all(|f| tablerow_filter(row, f))
 }
 
@@ -185,16 +188,15 @@ fn filter_tablerows(row: &TableRow<String, String>, vfilters: &Vec<KVFilter>) ->
 /// If the regex pair in KVFilter returns no matches across all cells the this
 /// row is filtered out (return false)
 fn tablerow_filter(row: &TableRow<String, String>, filt: &KVFilter) -> bool {
-        
-        row.keys()
-            .filter(|k| {
-                filt.key_re.is_match(k) && match row.get(k.clone()) {
-                    Some(v) => filt.value_re.is_match(v),
-                    None => false,
-                }
-            })
-            .collect::<Vec<_>>()
-            .len() > 0
+    row.keys()
+        .filter(|k| {
+            filt.key_re.is_match(k) && match row.get(k.clone()) {
+                Some(v) => filt.value_re.is_match(v),
+                None => false,
+            }
+        })
+        .collect::<Vec<_>>()
+        .len() > 0
 }
 
 #[test]
@@ -253,8 +255,7 @@ fn can_make_table_all_cols() {
 ///
 /// # Arguments
 ///
-/// `headings`       - Which values, in that order, to use as the table output
-/// `data`           - Vector of TableRows
+/// `data`           - Slice of TableRows
 /// `render_options` - Set of "config" that drives filtering, ordering, output.
 ///
 pub fn mk_table(
@@ -290,14 +291,14 @@ pub fn mk_table(
 
     format!(
         "{}\n{}",
-        mk_header(&heading_data),
-        mk_data(&heading_data, data, render_options)
+        mk_md_header(&heading_data),
+        mk_md_data(&heading_data, data, render_options)
     )
 }
 
 #[test]
 fn can_mk_table_with_1_filter() {
-        let tbl_md = mk_table(
+    let tbl_md = mk_table(
         &vec![
             linkedhashmap![s!("foo") => s!("ggg"), s!("bar") => s!("fred"), s!("nop") => s!("no")],
             linkedhashmap![s!("foo") => s!("seventy"), s!("bar") => s!("barry"), s!("nop") => s!("no")],
@@ -305,11 +306,9 @@ fn can_mk_table_with_1_filter() {
         ],
         &Some(RenderOptions {
             headings: Some(vec![s!("foo"), s!("bar")]),
-            filters: Some(vec![
-                KVFilter::new(s!("foo"), s!("ggg"))
-            ]),
-            
-                        ..Default::default()
+            filters: Some(vec![KVFilter::new(s!("foo"), s!("ggg"))]),
+
+            ..Default::default()
         }),
     );
 
@@ -323,12 +322,11 @@ fn can_mk_table_with_1_filter() {
     println!("{}\n{}", tbl_md, expected);
 
     assert!(tbl_md == expected);
-
 }
 
 #[test]
 fn can_mk_table_with_2_filter() {
-        let tbl_md = mk_table(
+    let tbl_md = mk_table(
         &vec![
             linkedhashmap![s!("foo") => s!("ggg"), s!("bar") => s!("fred"), s!("nop") => s!("no")],
             linkedhashmap![s!("foo") => s!("ggg"), s!("bar") => s!("barry"), s!("nop") => s!("no")],
@@ -338,10 +336,10 @@ fn can_mk_table_with_2_filter() {
             headings: Some(vec![s!("foo"), s!("bar")]),
             filters: Some(vec![
                 KVFilter::new(s!("foo"), s!("ggg")),
-                KVFilter::new(s!("bar"), s!("barry"))
+                KVFilter::new(s!("bar"), s!("barry")),
             ]),
-            
-                        ..Default::default()
+
+            ..Default::default()
         }),
     );
 
@@ -355,16 +353,15 @@ fn can_mk_table_with_2_filter() {
     println!("{}\n{}", tbl_md, expected);
 
     assert!(tbl_md == expected);
-
 }
 
 ///
 /// We want to see if the regexp finds values in other "not" aligned cells
-/// and because a "heading" filter is applied (afte the fact) the cell that has 
+/// and because a "heading" filter is applied (afte the fact) the cell that has
 /// an 'r' in it, doesn't come in the output.
 #[test]
 fn can_mk_table_with_value_regex() {
-        let tbl_md = mk_table(
+    let tbl_md = mk_table(
         &vec![
             linkedhashmap![s!("foo") => s!("ggg"), s!("bar") => s!("fred"), s!("nop") => s!("no")],
             linkedhashmap![s!("foo") => s!("ggg"), s!("bar") => s!("abc"), s!("nop") => s!("has an r here")],
@@ -372,11 +369,9 @@ fn can_mk_table_with_value_regex() {
         ],
         &Some(RenderOptions {
             headings: Some(vec![s!("foo"), s!("bar")]),
-            filters: Some(vec![
-                KVFilter::new(s!(".*"), s!(".*r.*")),
-            ]),
-            
-                        ..Default::default()
+            filters: Some(vec![KVFilter::new(s!(".*"), s!(".*r.*"))]),
+
+            ..Default::default()
         }),
     );
 
@@ -391,5 +386,26 @@ fn can_mk_table_with_value_regex() {
     println!("{}\n{}", tbl_md, expected);
 
     assert!(tbl_md == expected);
+}
 
+///
+/// From Spreadsheets, or keyed YAML files, the table could be named.
+/// When we generate the Markdown, we optionally may want the title of the
+/// table at the beginning.
+///
+pub fn named_table_to_md(
+    table: Result<NamedTable<String, String>, ErroredTable>,
+    print_name: bool,
+    render_options: &Option<RenderOptions>,
+) -> String {
+    match table {
+        Err((name, error)) => format!("Sheet `{}` errored: {}", name, error),
+        Ok((name, table_data)) => {
+            if print_name {
+                format!("**{}**\n{}", name, mk_table(&table_data, render_options))
+            } else {
+                mk_table(&table_data, render_options)
+            }
+        }
+    }
 }

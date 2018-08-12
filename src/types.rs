@@ -1,7 +1,6 @@
 use linked_hash_map::LinkedHashMap;
 use regex::Regex;
 
-
 /*
  * Table / internal data types.
  */
@@ -16,19 +15,17 @@ pub type ErroredTable = (String, String);
  * Filtering
  */
 
-#[derive(Clone,Serialize, Deserialize, Debug)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct KVFilter {
-    
     #[serde(with = "build_regex")]
     pub key_re: Regex,
-    
+
     #[serde(with = "build_regex")]
     pub value_re: Regex,
-
 }
 
 mod build_regex {
-    use serde::{self, Deserialize, Serializer, Deserializer};
+    use serde::{self, Deserialize, Deserializer, Serializer};
 
     use regex::Regex;
 
@@ -39,10 +36,7 @@ mod build_regex {
     //        S: Serializer
     //
     // although it may also be generic over the input types T.
-    pub fn serialize<S>(
-        re: &Regex,
-        serializer: S,
-    ) -> Result<S::Ok, S::Error>
+    pub fn serialize<S>(re: &Regex, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
     {
@@ -57,9 +51,7 @@ mod build_regex {
     //        D: Deserializer<'de>
     //
     // although it may also be generic over the output types T.
-    pub fn deserialize<'de, D>(
-        deserializer: D,
-    ) -> Result<Regex, D::Error>
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<Regex, D::Error>
     where
         D: Deserializer<'de>,
     {
@@ -67,7 +59,6 @@ mod build_regex {
         Regex::new(&s).map_err(serde::de::Error::custom)
     }
 }
-
 
 impl KVFilter {
     pub fn new(key: String, value: String) -> KVFilter {
@@ -85,7 +76,7 @@ impl KVFilter {
  */
 #[derive(Default, Clone)]
 pub struct RenderOptions {
-    pub filters:    Option<Vec<KVFilter>>,
-    pub headings:   Option<Headers>,
+    pub filters: Option<Vec<KVFilter>>,
+    pub headings: Option<Headers>,
     pub sheet_name: Option<String>,
 }

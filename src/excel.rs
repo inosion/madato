@@ -2,49 +2,33 @@
 
 use calamine::{open_workbook_auto, DataType, Reader};
 
-use mk_table;
+use named_table_to_md;
 use types::{ErroredTable, NamedTable, RenderOptions, TableRow};
 
-fn table_to_md_generator(
-    table: Result<NamedTable<String, String>, ErroredTable>,
-    print_name: bool,
-    render_options: &Option<RenderOptions>,
-) -> String {
-    match table {
-        Err((name, error)) => format!("Sheet `{}` errored: {}", name, error),
-        Ok((name, table_data)) => {
-            if print_name {
-                format!("**{}**\n{}", name, mk_table(&table_data, render_options))
-            } else {
-                mk_table(&table_data, render_options)
-            }
-        }
-    }
-}
-
+///
+/// Given a path to a Calamine supported Spreadsheet,
+/// return a String or Error of that Spreadsheet
+///
 pub fn spreadsheet_to_md(
     filename: String,
     render_options: &Option<RenderOptions>,
 ) -> Result<String, String> {
-    let results = read_excel(filename, render_options.clone().and_then(|r| r.sheet_name));
+    let results =
+        read_excel_to_named_tables(filename, render_options.clone().and_then(|r| r.sheet_name));
     if results.len() <= 1 {
-        Ok(table_to_md_generator(
-            results[0].clone(),
-            false,
-            render_options,
-        ))
+        Ok(named_table_to_md(results[0].clone(), false, render_options))
     } else {
         Ok(results
             .iter()
             .map(|table_result| {
-                table_to_md_generator(table_result.clone(), true, &render_options.clone())
+                named_table_to_md(table_result.clone(), true, &render_options.clone())
             })
             .collect::<Vec<String>>()
             .join("\n\n"))
     }
 }
 
-pub fn read_excel(
+pub fn read_excel_to_named_tables(
     filename: String,
     sheet_name: Option<String>,
 ) -> Vec<Result<NamedTable<String, String>, ErroredTable>> {
@@ -109,10 +93,19 @@ pub fn list_sheet_names(filename: String) -> Result<Vec<String>, String> {
     Ok(workbook.sheet_names().to_owned())
 }
 
-fn md_santise(data: &DataType) -> String {
+pub fn md_santise(data: &DataType) -> String {
     data.to_string()
         .replace("|", "\\|")
         .replace("\r\n", "<br/>")
         .replace("\n", "<br/>")
         .replace("\r", "<br/>")
+}
+
+///
+/// Use calamine to print sheet names
+///
+pub fn get_sheet_names(filename: String) {
+    for s in list_sheet_names(filename).unwrap() {
+        println!("{}", s);
+    }
 }
