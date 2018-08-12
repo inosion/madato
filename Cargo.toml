@@ -2,6 +2,10 @@
 name = "madato"
 version = "0.5.1"
 authors = ["Ramon Buckland <ramon.buckland@inosion.com>"]
+license = "MIT/Apache-2.0"
+description = "A library and command line tool for working tabular data (XLS, ODS, CSV, YAML), and Markdown"
+readme  = "README.md"
+keywords = ["markdown","excel","yaml","tables","openoffice"]
 exclude = [
     "doc/*",
     "assets/*",
@@ -23,6 +27,7 @@ serde_yaml      = "0.7.5"
 indexmap        = "1.0.1"
 docopt          = "1.0.0"
 calamine        = "0.14"
+proc-macro2     = "=0.4.8"
 
 [dependencies.linked-hash-map]
 version = "0.5.1"
