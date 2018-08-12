@@ -23,6 +23,7 @@ serde_yaml      = "0.7.5"
 indexmap        = "1.0.1"
 docopt          = "1.0.0"
 calamine        = "0.14"
+proc-macro2     = "=0.4.8"
 
 [dependencies.linked-hash-map]
 version = "0.5.1"
