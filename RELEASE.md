@@ -9,3 +9,8 @@
 * `0.4.0` - 26 Jul 2018
   - To help with CI/CD type environments, and scripting, you can list out the sheetnames
     like `md_tools listsheets <filename>`
+* `0.5.0` - 12 Aug 2018
+  - Completed the filter options that support regex
+  - Renamed to `madato` - rhymes with tomato
+* `0.5.1` - 12 Aug 2018
+  - tidy up for crates.io release

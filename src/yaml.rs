@@ -1,6 +1,8 @@
 use super::mk_table;
 use linked_hash_map::LinkedHashMap;
 
+use std::fs::File;
+use std::io::prelude::*;
 use types::*;
 use wasm_bindgen::prelude::*;
 
@@ -134,4 +136,16 @@ pub fn mk_yaml_from_table_result(
     } else {
         serde_yaml::to_string(&table_map).unwrap()
     }
+}
+
+pub fn yaml_file_to_md(
+    filename: String,
+    render_options: &Option<RenderOptions>,
+) -> Result<String, String> {
+    let mut file = File::open(filename).expect("Unable to open the file");
+    let mut contents = String::new();
+    file.read_to_string(&mut contents)
+        .expect("Unable to read the file");
+
+    Ok(mk_md_table_from_yaml(&contents, render_options))
 }

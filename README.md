@@ -1,8 +1,14 @@
-![travis-ci](https://travis-ci.org/inosion/markdown-tools.svg?branch=master)
 
-# madato
+# madato &emsp; [![Build Status]][travis] [![Latest Version]][crates.io]
 
-***a tabular data rust library, and command line utility***
+[Build Status]: https://travis-ci.org/inosion/madato.svg?branch=master
+[travis]: https://travis-ci.org/inosion/madato
+[Latest Version]: https://img.shields.io/crates/v/madato.svg
+[crates.io]: https://crates.io/crates/madato
+
+***madato is a library and command line tool for working tabular data, and Markdown***
+
+--------------------------------------------------------------------------------
 
 The tools is primarly centered around getting tabular data (spreadsheets, CSVs)
 into Markdown. 
@@ -166,3 +172,20 @@ If you omit the sheet name, it will dump all sheets into an order map of array o
 
 ### Known Issues
 * A Spreadsheet Cell with a Date will come out as the "magic" Excel date number :-( - https://github.com/tafia/calamine/issues/116
+
+## License
+
+Serde is licensed under either of
+
+ * Apache License, Version 2.0, ([LICENSE-APACHE](LICENSE-APACHE) or
+   http://www.apache.org/licenses/LICENSE-2.0)
+ * MIT license ([LICENSE-MIT](LICENSE-MIT) or
+   http://opensource.org/licenses/MIT)
+
+at your option.
+
+### Contribution
+
+Unless you explicitly state otherwise, any contribution intentionally submitted
+for inclusion in Serde by you, as defined in the Apache-2.0 license, shall be
+dual licensed as above, without any additional terms or conditions.
