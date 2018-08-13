@@ -1,0 +1,20 @@
+[package]
+name = "madato_cmd"
+version = "0.5.2"
+authors = ["Ramon Buckland <ramon.buckland@inosion.com>"]
+license = "MIT/Apache-2.0"
+description = "Command Line Binary for madato"
+readme  = "README.md"
+keywords = ["markdown","excel","yaml","tables","openoffice", "javascript", "wasm"]
+
+[[bin]]
+name = "madato"
+path = "src/main.rs"
+
+[dependencies]
+madato          = { path = "../madato" }
+madato_cal      = { path = "../madato_cal" }
+serde           = "1.0"
+serde_derive    = "1.0"
+regex           = "1"
+docopt          = "1.0.0"

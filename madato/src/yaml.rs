@@ -4,7 +4,6 @@ use linked_hash_map::LinkedHashMap;
 use std::fs::File;
 use std::io::prelude::*;
 use types::*;
-use wasm_bindgen::prelude::*;
 
 #[allow(unused_imports)]
 use utils::StripMargin;
@@ -82,7 +81,6 @@ fn load_yaml(yaml: &str) -> Table<String, String> {
     deserialized_map
 }
 
-#[wasm_bindgen]
 pub fn md_table_yaml_and_headings(headings: &str, yaml: &str) -> String {
     // we don't use an indexSet here for headings because the user may want repeats of the columns
     let render_options = RenderOptions {
@@ -118,7 +116,6 @@ pub fn md_table_yaml_and_headings(headings: &str, yaml: &str) -> String {
 /// |100 | ta da |  this   |someother value here|
 /// ```
 ///
-#[wasm_bindgen]
 pub fn mk_md_table_from_yaml(yaml: &str, render_options: &Option<RenderOptions>) -> String {
     mk_table(&load_yaml(yaml), render_options)
 }

@@ -1,5 +1,5 @@
-wasm_compiled = test/www-sample/markdown_tools.wasm test/www-sample/markdown_tools.d.ts test/www-sample/markdown_tools.js
-wasm_debug    = target/wasm32-unknown-unknown/debug/markdown_tools.wasm
+wasm_compiled = test/www-sample/madatojs.wasm test/www-sample/madatojs.d.ts test/www-sample/madatojs.js
+wasm_debug    = target/wasm32-unknown-unknown/debug/madatojs.wasm
 
 $(wasm_debug):
 	cargo +nightly build --target wasm32-unknown-unknown

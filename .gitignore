@@ -1,16 +1,12 @@
 
-/target
 **/*.rs.bk
 Cargo.lock
 
-test/www-sample/markdown_tools_bg.wasm
-test/www-sample/markdown_tools.js
-test/www-sample/markdown_tools.d.ts
-test/www-sample/node_modules
+node_modules/
+target/
 
 npm-debug.log
 
 .vscode/
-
 
 .~lock*

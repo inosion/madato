@@ -3,11 +3,12 @@
 extern crate serde_derive;
 extern crate docopt;
 extern crate madato;
+extern crate madato_cal;
 
 use docopt::Docopt;
-use madato::excel::*;
 use madato::types::*;
 use madato::yaml::*;
+use madato_cal::*;
 
 const USAGE: &str = "
 madato utility - Tabular Data Helper

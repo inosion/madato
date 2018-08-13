@@ -1,0 +1,18 @@
+[package]
+name = "madato_js"
+version = "0.5.2"
+authors = ["Ramon Buckland <ramon.buckland@inosion.com>"]
+license = "MIT/Apache-2.0"
+description = "JS API WASM Binding for madato"
+readme  = "README.md"
+keywords = ["markdown","excel","yaml","tables","openoffice", "javascript", "wasm"]
+exclude = [
+    "test/*",
+]
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+madato          = { path = "../madato" }
+wasm-bindgen    = "0.2"
