@@ -1,9 +1,12 @@
-#![feature(slice_patterns)]
+// #![feature(slice_patterns)]
+
+
+extern crate calamine;
+extern crate madato;
 
 use calamine::{open_workbook_auto, DataType, Reader};
 
-use named_table_to_md;
-use types::{ErroredTable, NamedTable, RenderOptions, TableRow};
+use madato::types::{ErroredTable, NamedTable, RenderOptions, TableRow};
 
 ///
 /// Given a path to a Calamine supported Spreadsheet,
@@ -16,12 +19,12 @@ pub fn spreadsheet_to_md(
     let results =
         read_excel_to_named_tables(filename, render_options.clone().and_then(|r| r.sheet_name));
     if results.len() <= 1 {
-        Ok(named_table_to_md(results[0].clone(), false, render_options))
+        Ok(madato::named_table_to_md(results[0].clone(), false, render_options))
     } else {
         Ok(results
             .iter()
             .map(|table_result| {
-                named_table_to_md(table_result.clone(), true, &render_options.clone())
+                madato::named_table_to_md(table_result.clone(), true, &render_options.clone())
             })
             .collect::<Vec<String>>()
             .join("\n\n"))

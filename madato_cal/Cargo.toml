@@ -1,0 +1,17 @@
+[package]
+name = "madato_cal"
+version = "0.5.3"
+authors = ["Ramon Buckland <ramon.buckland@inosion.com>"]
+license = "MIT/Apache-2.0"
+description = "XLS, ODS Support for the madato lib and command line"
+readme  = "README.md"
+repository = "https://github.com/inosion/madato"
+keywords = ["markdown","excel","yaml","tables","openoffice"]
+include = [ "src/lib.js", "Cargo.toml" ]
+
+[lib]
+crate-type = ["rlib"]
+
+[dependencies]
+madato          = { path = "../madato" }
+calamine        = "0.14"

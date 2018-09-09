@@ -1,9 +1,7 @@
-#![feature(
-    use_extern_macros, wasm_custom_section, wasm_import_module, iterator_flatten, slice_patterns,
-    extern_prelude, serde_impl
-)]
+// #![feature(
+//     slice_patterns, extern_prelude, serde_impl
+// )]
 
-extern crate calamine;
 extern crate indexmap;
 
 extern crate linked_hash_map;
@@ -13,11 +11,9 @@ extern crate serde;
 #[macro_use]
 extern crate serde_derive;
 extern crate serde_yaml;
-extern crate wasm_bindgen;
 
 #[macro_use]
 pub mod utils;
-pub mod excel;
 pub mod types;
 pub mod yaml;
 

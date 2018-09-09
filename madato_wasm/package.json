@@ -1,0 +1,32 @@
+{
+  "name": "madato_js",
+  "version": "0.5.2",
+  "description": "Markdown Tools for Structured Data",
+  "main": "madato_js.wasm",
+  "directories": {
+    "test": "spec"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "jasmine": "^3.2.0"
+  },
+  "scripts": {
+    "test": "jasmine"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/inosion/madato"
+  },
+  "keywords": [
+    "markdown",
+    "tables",
+    "structured",
+    "data"
+  ],
+  "author": "Ramon Buckland",
+  "license": "SEE LICENSE IN ../LICENSE",
+  "bugs": {
+    "url": "https://github.com/inosion/madato/issues"
+  },
+  "homepage": "https://github.com/inosion/madato#readme"
+}

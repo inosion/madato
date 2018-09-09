@@ -4,7 +4,8 @@ use linked_hash_map::LinkedHashMap;
 use std::fs::File;
 use std::io::prelude::*;
 use types::*;
-use wasm_bindgen::prelude::*;
+use serde_yaml::from_str;
+use serde_yaml::to_string;
 
 #[allow(unused_imports)]
 use utils::StripMargin;
@@ -78,11 +79,10 @@ fn can_yaml_to_md_with_headings() {
 }
 
 fn load_yaml(yaml: &str) -> Table<String, String> {
-    let deserialized_map: Table<String, String> = serde_yaml::from_str(&yaml).unwrap();
+    let deserialized_map: Table<String, String> = from_str(&yaml).unwrap();
     deserialized_map
 }
 
-#[wasm_bindgen]
 pub fn md_table_yaml_and_headings(headings: &str, yaml: &str) -> String {
     // we don't use an indexSet here for headings because the user may want repeats of the columns
     let render_options = RenderOptions {
@@ -118,7 +118,6 @@ pub fn md_table_yaml_and_headings(headings: &str, yaml: &str) -> String {
 /// |100 | ta da |  this   |someother value here|
 /// ```
 ///
-#[wasm_bindgen]
 pub fn mk_md_table_from_yaml(yaml: &str, render_options: &Option<RenderOptions>) -> String {
     mk_table(&load_yaml(yaml), render_options)
 }
@@ -132,9 +131,9 @@ pub fn mk_yaml_from_table_result(
 
     // if we only have one table, strip off the key (get just the value)
     if table_map.len() == 1 {
-        serde_yaml::to_string(&table_map.values().next().unwrap()).unwrap()
+        to_string(&table_map.values().next().unwrap()).unwrap()
     } else {
-        serde_yaml::to_string(&table_map).unwrap()
+        to_string(&table_map).unwrap()
     }
 }
 
