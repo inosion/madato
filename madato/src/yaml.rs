@@ -4,6 +4,8 @@ use linked_hash_map::LinkedHashMap;
 use std::fs::File;
 use std::io::prelude::*;
 use types::*;
+use serde_yaml::from_str;
+use serde_yaml::to_string;
 
 #[allow(unused_imports)]
 use utils::StripMargin;
@@ -77,7 +79,7 @@ fn can_yaml_to_md_with_headings() {
 }
 
 fn load_yaml(yaml: &str) -> Table<String, String> {
-    let deserialized_map: Table<String, String> = serde_yaml::from_str(&yaml).unwrap();
+    let deserialized_map: Table<String, String> = from_str(&yaml).unwrap();
     deserialized_map
 }
 
@@ -129,9 +131,9 @@ pub fn mk_yaml_from_table_result(
 
     // if we only have one table, strip off the key (get just the value)
     if table_map.len() == 1 {
-        serde_yaml::to_string(&table_map.values().next().unwrap()).unwrap()
+        to_string(&table_map.values().next().unwrap()).unwrap()
     } else {
-        serde_yaml::to_string(&table_map).unwrap()
+        to_string(&table_map).unwrap()
     }
 }
 

@@ -1,6 +1,6 @@
 language: rust
 rust:
-- nightly
+- stable
 
 cache:
   timeout: 360
@@ -30,7 +30,7 @@ deploy:
   file_glob: true
   file: ${PROJECT_NAME}-${TRAVIS_TAG}-${TARGET}.*
   on:
-    repo: inosion/markdown-tools
+    repo: inosion/madato
     # condition: "$TRAVIS_RUST_VERSION = stable"
     tags: true
   skip_cleanup: true

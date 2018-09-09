@@ -1,7 +1,6 @@
-#![feature(
-    use_extern_macros, iterator_flatten, slice_patterns,
-    extern_prelude, serde_impl
-)]
+// #![feature(
+//     slice_patterns, extern_prelude, serde_impl
+// )]
 
 extern crate indexmap;
 

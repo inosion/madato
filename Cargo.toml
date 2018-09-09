@@ -3,9 +3,6 @@ members = [
     # Core library that renders markdown tables
     "madato",
 
-    # wasm bindings that uses the core library
-    "madato_js",
-
     # extras support for extracting from XLS and ODS files
     "madato_cal",
 

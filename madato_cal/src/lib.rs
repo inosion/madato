@@ -1,4 +1,4 @@
-#![feature(slice_patterns)]
+// #![feature(slice_patterns)]
 
 
 extern crate calamine;

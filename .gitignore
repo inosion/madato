@@ -5,7 +5,7 @@ Cargo.lock
 node_modules/
 target/
 
-npm-debug.log
+*.log
 
 .vscode/
 
