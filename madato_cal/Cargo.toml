@@ -11,7 +11,8 @@ include = [ "src/lib.js", "Cargo.toml" ]
 
 [lib]
 crate-type = ["rlib"]
+path = "src/lib.rs"
 
 [dependencies]
-madato          = { path = "../madato" }
+madato          = "0.5.3"
 calamine        = "0.14"
