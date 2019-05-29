@@ -124,7 +124,7 @@ the XLS.
 |100 | ta da |  this   |someother value here|
 ```
 
-*Please see the [test/www-sample/test.yml](test/www-sample/test.yml) file for the expected layout of this file*
+*Please see the [test/test.yml](test/test.yml) file for the expected layout of this file*
 
 ### Excel/ODS to YAML
 
