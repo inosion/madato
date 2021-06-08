@@ -21,18 +21,26 @@ Usage:
   madato --version
 
 Options:
-  table                         Generate Makrdown or YAML tables from a Source.
+  table                         Generate Makrdown or YAML tables from a Source (YAML, ODS, XLSX, CSV)
   sheetlist                     Read an Excel/ODS file and list out the names in the sheet.
 
   <filename>                    Input Filename.
 
-  -t --type <type>              Input Type.
+  -t --type <type>              Input Type. XLSX(xls, xlsx, xlsm, xlsb, ods), YAML(table/row structure) or CSV
   -s --sheetname <sheetname>    When a Spreadsheet, restrict to just one of the sheets.
-  -o --outputtype <outputtype>  MD (Markdown) or YAML. [default: MD]
+  -o --outputtype <outputtype>  JSON, MD (Markdown) or YAML. [default: MD]
   -f --filters <filters>        Filter data in the results based on a simple, key=value
   -c --columns <column>         List of Columns to output 'only'
   -h --help                     Show this screen.
   --version                     Show version.
+
+Quick examples
+
+  madato table -t XLSX -o JSON workbook3.xlsx
+  madato table -t XLSX -o MD   --sheetname Sheet2 someSheet_workbook.ods
+  madato table -t XLSX -o YAML workbook3.xlsx
+  madato table -t YAML -o MD   my_structured_data.yaml
+  madato table -t XLSX -o YAML --filters 'Col1=Year.* Col[4-9]=.*' workbook3.xlsx
 
 Filtering Example:
 
@@ -77,6 +85,7 @@ enum FileType {
 #[derive(Debug, Deserialize)]
 enum OutputType {
     YAML,
+    JSON,
     MD,
 }
 
@@ -134,11 +143,16 @@ fn main() -> Result<(), String> {
         OutputType::MD => match args.flag_type {
             Some(FileType::YAML) => yaml_file_to_md(args.arg_filename, &render_options),
             Some(FileType::XLSX) => spreadsheet_to_md(args.arg_filename, &render_options),
-            _ => Err(String::from("not implemented")),
+            Some(FileType::CSV) => Err(String::from("CSV not implemented")),
+            _ => Err(String::from("No file type specified"))
         },
         OutputType::YAML => {
             let tables = read_excel_to_named_tables(args.arg_filename, args.flag_sheetname);
             Ok(mk_yaml_from_table_result(tables))
+        },
+        OutputType::JSON => {
+            let tables = read_excel_to_named_tables(args.arg_filename, args.flag_sheetname);
+            Ok(mk_json_from_table_result(tables))
         }
     };
 

@@ -4,8 +4,6 @@ use linked_hash_map::LinkedHashMap;
 use std::fs::File;
 use std::io::prelude::*;
 use types::*;
-use serde_yaml::from_str;
-use serde_yaml::to_string;
 
 #[allow(unused_imports)]
 use utils::StripMargin;
@@ -79,7 +77,12 @@ fn can_yaml_to_md_with_headings() {
 }
 
 fn load_yaml(yaml: &str) -> Table<String, String> {
-    let deserialized_map: Table<String, String> = from_str(&yaml).unwrap();
+    let deserialized_map: Table<String, String> = serde_yaml::from_str(&yaml).unwrap();
+    deserialized_map
+}
+
+fn _load_json(json: &str) -> Table<String, String> {
+    let deserialized_map: Table<String, String> = serde_json::from_str(&json).unwrap();
     deserialized_map
 }
 
@@ -131,9 +134,24 @@ pub fn mk_yaml_from_table_result(
 
     // if we only have one table, strip off the key (get just the value)
     if table_map.len() == 1 {
-        to_string(&table_map.values().next().unwrap()).unwrap()
+        serde_yaml::to_string(&table_map.values().next().unwrap()).unwrap()
     } else {
-        to_string(&table_map).unwrap()
+        serde_yaml::to_string(&table_map).unwrap()
+    }
+}
+
+/// Given results of tables, throw them back out as JSON
+pub fn mk_json_from_table_result(
+    tables: Vec<Result<NamedTable<String, String>, ErroredTable>>,
+) -> String {
+    let table_map: LinkedHashMap<String, Table<String, String>> =
+        tables.into_iter().filter_map(Result::ok).collect();
+
+    // if we only have one table, strip off the key (get just the value)
+    if table_map.len() == 1 {
+        serde_json::to_string_pretty(&table_map.values().next().unwrap()).unwrap()
+    } else {
+        serde_json::to_string_pretty(&table_map).unwrap()
     }
 }
 

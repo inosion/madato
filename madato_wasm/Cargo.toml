@@ -1,6 +1,6 @@
 [package]
 name = "madato_wasm"
-version = "0.5.3"
+version = "0.5.4"
 authors = ["Ramon Buckland <ramon.buckland@inosion.com>"]
 license = "MIT/Apache-2.0"
 description = "JS API WASM Binding for madato"

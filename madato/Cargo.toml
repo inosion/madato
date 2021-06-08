@@ -1,6 +1,6 @@
 [package]
 name = "madato"
-version = "0.5.3"
+version = "0.5.4"
 authors = ["Ramon Buckland <ramon.buckland@inosion.com>"]
 license = "MIT/Apache-2.0"
 description = "A library and command line tool for working tabular data (XLS, ODS, CSV, YAML), and Markdown"
@@ -20,7 +20,8 @@ crate-type = ["rlib"]
 regex           = "1"
 serde           = "1.0"
 serde_derive    = "1.0"
-serde_yaml      = "0.7.5"
+serde_yaml      = "0.8"
+serde_json      = "1.0"
 indexmap        = "1.0.1"
 
 [dependencies.linked-hash-map]

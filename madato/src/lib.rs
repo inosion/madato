@@ -144,7 +144,7 @@ pub fn mk_md_data(
 ) -> String {
     let filters: Option<Vec<KVFilter>> = render_options.clone().and_then(|ro| ro.filters);
 
-    let iter: Box<Iterator<Item = &TableRow<String, String>>> = match filters {
+    let iter: Box<dyn Iterator<Item = &TableRow<String, String>>> = match filters {
         None => Box::new(data.iter()),
         Some(vfilts) => Box::new(
             data.iter()
