@@ -8,6 +8,23 @@
 
 ***madato is a library and command line tool for working tabular data, and Markdown***
 
+Windows, Mac and Linux
+
+Converts XLSX and ODS Spreadsheets to 
+- JSON
+- YAML 
+- Markdown
+
+### TL;DR
+
+```
+madato table -t XLSX -o JSON --sheetname Sheet2         path/to/workbook.xlsx
+madato table -t XLSX -o MD   --sheetname Sheet2         path/to/workbook.xlsx
+madato table -t XLSX -o YAML --sheetname 'Annual Sales' path/to/workbook.xlsx
+madato table -t XLSX -o YAML path/to/workbook.ods
+madato table -t YAML -o MD   path/to/workbook.yaml
+```
+
 --------------------------------------------------------------------------------
 
 The tools is primarly centered around getting tabular data (spreadsheets, CSVs)
