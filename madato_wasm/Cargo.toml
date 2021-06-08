@@ -15,5 +15,5 @@ exclude = [
 crate-type = ["cdylib"]
 
 [dependencies]
-madato          = { path = "../madato" }
+madato          = { path = "../../madato" }
 wasm-bindgen    = "0.2"

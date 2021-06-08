@@ -14,5 +14,5 @@ crate-type = ["rlib"]
 path = "src/lib.rs"
 
 [dependencies]
-madato          = "0.5.3"
+madato          = { path = "../madato/" }
 calamine        = "0.14"
