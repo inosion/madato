@@ -1,0 +1,25 @@
+name: GitHub Actions Demo
+on: [push]
+jobs:
+  Explore-GitHub-Actions:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "🎉 job triggered by ${{ github.event_name }} event."
+      - run: echo "🐧 job is running on ${{ runner.os }} server"
+      - run: echo "🔎 branch is ${{ github.ref }}, repository is ${{ github.repository }}."
+      - name: Check out repository code
+        uses: actions/checkout@v2
+      - run: echo "💡 ${{ github.repository }} repository has been cloned to the runner."
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+      - uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --release --all-features
+      - uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --release --all-features
+      - run: echo "🍏 This job's status is ${{ job.status }}."
+
