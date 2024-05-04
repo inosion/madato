@@ -5,6 +5,7 @@ extern crate madato;
 extern crate madato_cal;
 
 use docopt::Docopt;
+use madato::csv::*;
 use madato::types::*;
 use madato::yaml::*;
 use madato_cal::*;
@@ -12,7 +13,7 @@ use madato_cal::*;
 const USAGE: &str = "
 madato utility - Tabular Data Helper
 
-SpreadSheet <--> YAML <--> JSON <--> Markdown 
+SpreadSheet <--> YAML <--> JSON <--> Markdown
 
 Usage:
   madato table -t <type> [-s <sheetname>] [-o <outputtype>] [-f <filters>...] [-c <column>...] <filename>
@@ -28,7 +29,7 @@ Options:
 
   -t --type <type>              Input Type. XLSX(xls, xlsx, xlsm, xlsb, ods), YAML(table/row structure) or CSV
   -s --sheetname <sheetname>    When a Spreadsheet, restrict to just one of the sheets.
-  -o --outputtype <outputtype>  JSON, MD (Markdown) or YAML. [default: MD]
+  -o --outputtype <outputtype>  JSON, MD (Markdown), CSV or YAML. [default: MD]
   -f --filters <filters>        Filter data in the results based on a simple, key=value
   -c --columns <column>         List of Columns to output 'only'
   -h --help                     Show this screen.
@@ -41,8 +42,10 @@ Quick examples
   madato table -t XLSX -o YAML workbook3.xlsx
   madato table -t YAML -o MD   my_structured_data.yaml
   madato table -t XLSX -o YAML --filters 'Col1=Year.* Col[4-9]=.*' workbook3.xlsx
+  madato table -t XLSX -o CSV test/sample_multi_sheet.xlsx
+  madato table -t CSV -o MD test/potatoes.csv
 
-Filtering Example:
+  Filtering Example:
 
   Basic Filtering support occurs on a row by row basis where the key=value pair need to match.
   Both support a regular expression over the key and or the value.
@@ -58,13 +61,12 @@ Column Limit:
   Limit the Columns that are printed. (note, filtering occurs to ALL columns, before the output limit)
 
   - two colums '-c id -c amount'
-  - multiple columns '-c col1 -c col2 -c col3'  
+  - multiple columns '-c col1 -c col2 -c col3'
   - a column name can appear more than once eg: '-c col2 -c col2 -c col3'
 ";
 
 #[derive(Debug, Deserialize)]
 struct Args {
-    cmd_table: bool,
     cmd_sheetlist: bool,
     arg_filename: String,
 
@@ -86,6 +88,7 @@ enum FileType {
 enum OutputType {
     YAML,
     JSON,
+    CSV,
     MD,
 }
 
@@ -143,16 +146,22 @@ fn main() -> Result<(), String> {
         OutputType::MD => match args.flag_type {
             Some(FileType::YAML) => yaml_file_to_md(args.arg_filename, &render_options),
             Some(FileType::XLSX) => spreadsheet_to_md(args.arg_filename, &render_options),
-            Some(FileType::CSV) => Err(String::from("CSV not implemented")),
-            _ => Err(String::from("No file type specified"))
+            Some(FileType::CSV) => csv_file_to_md(args.arg_filename, &render_options),
+            _ => Err(String::from(
+                "No input file type was specified. Please use -t XLSX, -t YAML or -t CSV",
+            )),
         },
         OutputType::YAML => {
             let tables = read_excel_to_named_tables(args.arg_filename, args.flag_sheetname);
             Ok(mk_yaml_from_table_result(tables))
-        },
+        }
         OutputType::JSON => {
             let tables = read_excel_to_named_tables(args.arg_filename, args.flag_sheetname);
             Ok(mk_json_from_table_result(tables))
+        }
+        OutputType::CSV => {
+            let tables = read_excel_to_named_tables(args.arg_filename, args.flag_sheetname);
+            Ok(mk_csv_from_table_result(tables))
         }
     };
 

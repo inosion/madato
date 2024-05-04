@@ -1,29 +1,29 @@
 use super::mk_table;
 use linked_hash_map::LinkedHashMap;
 
+use crate::types::*;
 use std::fs::File;
 use std::io::prelude::*;
-use types::*;
 
 #[allow(unused_imports)]
-use utils::StripMargin;
+use crate::utils::StripMargin;
 
 #[test]
 fn can_yaml_to_md() {
     let yml_data = "
     |- data1: somevalue
     |  data2: someother value here
-    |  col3: 100 
+    |  col3: 100
     |  col4: gar gar
     |- data1: that
     |  data2: nice
-    |  col3: 190x 
+    |  col3: 190x
     |- data1: this
     |  data2: someother value here
-    |  col3: 100 
+    |  col3: 100
     |  col4: ta da
     |"
-        .strip_margin();
+    .strip_margin();
 
     // the | below is the margin
     let expected = "
@@ -43,17 +43,17 @@ fn can_yaml_to_md_with_headings() {
     let yml_data = "
     |- data1: somevalue
     |  data2: someother value here
-    |  col3: 100 
+    |  col3: 100
     |  col4: gar gar
     |- data1: that
     |  data2: nice
-    |  col3: 190x 
+    |  col3: 190x
     |- data1: this
     |  data2: someother value here
-    |  col3: 100 
+    |  col3: 100
     |  col4: ta da
     |"
-        .strip_margin();
+    .strip_margin();
     let headings = vec![s!("data1"), s!("data2"), s!("col4")];
 
     // the | below is the margin
@@ -108,7 +108,7 @@ pub fn md_table_yaml_and_headings(headings: &str, yaml: &str) -> String {
 /// - data1: this
 ///   data2: someother value here
 ///   col3: 100
-///   col4: ta da    
+///   col4: ta da
 /// ```
 ///
 /// gives
