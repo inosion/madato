@@ -14,6 +14,7 @@ extern crate serde_yaml;
 
 #[macro_use]
 pub mod utils;
+pub mod csv;
 pub mod types;
 pub mod yaml;
 
@@ -152,8 +153,8 @@ pub fn mk_md_data(
         ),
     };
 
-    let ret: Vec<String> =
-        iter.map(|hm| {
+    let ret: Vec<String> = iter
+        .map(|hm| {
             heading_data.iter().fold(String::from("|"), |res, k| {
                 let s = match hm.get(&k.0) {
                     Some(x) => x.to_string(),
@@ -162,7 +163,8 @@ pub fn mk_md_data(
 
                 format!("{}{: ^width$}|", res, s, width = k.1)
             })
-        }).collect::<Vec<String>>();
+        })
+        .collect::<Vec<String>>();
 
     // make a new String of all the concatenated fields
     ret.join("\n")
@@ -186,13 +188,15 @@ fn filter_tablerows(row: &TableRow<String, String>, vfilters: &Vec<KVFilter>) ->
 fn tablerow_filter(row: &TableRow<String, String>, filt: &KVFilter) -> bool {
     row.keys()
         .filter(|k| {
-            filt.key_re.is_match(k) && match row.get(k.clone()) {
-                Some(v) => filt.value_re.is_match(v),
-                None => false,
-            }
+            filt.key_re.is_match(k)
+                && match row.get(*k) {
+                    Some(v) => filt.value_re.is_match(v),
+                    None => false,
+                }
         })
         .collect::<Vec<_>>()
-        .len() > 0
+        .len()
+        > 0
 }
 
 #[test]
