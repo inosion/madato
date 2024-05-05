@@ -1,5 +1,5 @@
 [package]
-name = "madato_cmd"
+name = "madato_py"
 version = "0.7.0"
 authors = ["Ramon Buckland <ramon@thebuckland.com>"]
 license = "MIT/Apache-2.0"
@@ -9,14 +9,12 @@ repository = "https://github.com/inosion/madato"
 keywords = ["markdown","excel","yaml","tables","openoffice", "javascript", "wasm","csv"]
 edition = "2021"
 
-[[bin]]
+[lib]
 name = "madato"
-path = "src/main.rs"
+crate-type = ["cdylib"]
 
 [dependencies]
 madato          = { path = "../madato" }
-madato_cal      = { path = "../madato_cal" }
-serde           = "1.0"
-serde_derive    = "1.0"
-regex           = "1"
-docopt          = "1.0.0"
+madato_cal          = { path = "../madato_cal" }
+pyo3 = { version = "0.21.2", features = ["extension-module"] }
+pythonize = "0.21.1"

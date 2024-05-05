@@ -1,0 +1,83 @@
+[build-system]
+requires = ["maturin>=1,<2"]
+build-backend = "maturin"
+
+[project]
+name = 'madato'
+version = "0.6.0"
+requires-python = '>=3.7'
+description = "Convert between various formats (YAML, JSON, XLSX, ODS, CSV) to Markdown Tables"
+authors = [
+    {name ='Ramon Buckland', email = 'ramon@thebuckland.com'},
+]
+readme = 'README.md'
+classifiers = [
+    'Development Status :: 5 - Production/Stable',
+    'Programming Language :: Python',
+    'Programming Language :: Python :: 3',
+    'Programming Language :: Python :: 3 :: Only',
+    'Programming Language :: Python :: 3.8',
+    'Programming Language :: Python :: 3.9',
+    'Programming Language :: Python :: 3.10',
+    'Programming Language :: Python :: 3.11',
+    'Programming Language :: Python :: 3.12',
+    'License :: OSI Approved :: MIT License',
+    'Operating System :: POSIX :: Linux',
+    'Operating System :: Microsoft :: Windows',
+    'Operating System :: MacOS',
+    'Topic :: Software Development :: Libraries :: Python Modules',
+    'Topic :: Text Processing :: Markup',
+    'Topic :: Text Processing :: Markup :: Markdown',
+    'Topic :: Text Processing :: Markup :: YAML',
+    'Topic :: Text Processing :: Markup :: JSON',
+    'Topic :: Text Processing :: Markup :: CSV',
+    'Topic :: Text Processing :: Markup :: XLSX',
+]
+license = "MIT"
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+  'maturin >= 1.5',
+  'pyyaml >= 6',
+  'pytest >= 7.3',
+  'ipykernel >= 6',
+]
+
+
+[project.urls]
+Homepage = 'https://github.com/inosion/madato'
+Funding = 'https://github.com/sponsors/inosion'
+Source = 'https://github.com/inosion/madato'
+Changelog = 'https://github.com/inosion/madato/releases'
+
+
+
+
+[tool.maturin]
+module-name = "madato.madato"
+bindings = 'pyo3'
+
+[tool.pytest.ini_options]
+testpaths = 'tests'
+log_format = '%(name)s %(levelname)s: %(message)s'
+filterwarnings = 'error'
+
+[tool.black]
+color = true
+line-length = 120
+target-version = ['py39']
+skip-string-normalization = true
+
+[tool.isort]
+line_length = 120
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+combine_as_imports = true
+color_output = true
+
+[tool.ruff]
+line-length = 120
+extend-select = ['Q']
+flake8-quotes = {inline-quotes = 'single', multiline-quotes = 'double'}

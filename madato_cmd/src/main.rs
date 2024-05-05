@@ -80,6 +80,7 @@ struct Args {
 #[derive(Debug, Deserialize)]
 enum FileType {
     YAML,
+    JSON,
     XLSX,
     CSV,
 }
@@ -104,7 +105,7 @@ pub fn version() -> String {
     }
 }
 
-fn main() -> Result<(), String> {
+fn main() -> Result<(), MadatoError> {
     let args: Args = Docopt::new(USAGE)
         .and_then(|d| d.version(Some(version())).deserialize())
         .unwrap_or_else(|e| e.exit());
@@ -145,31 +146,30 @@ fn main() -> Result<(), String> {
     let output_string = match args.flag_outputtype {
         OutputType::MD => match args.flag_type {
             Some(FileType::YAML) => yaml_file_to_md(args.arg_filename, &render_options),
-            Some(FileType::XLSX) => spreadsheet_to_md(args.arg_filename, &render_options),
+            Some(FileType::JSON) => yaml_file_to_md(args.arg_filename, &render_options),
+            Some(FileType::XLSX) => {
+                spreadsheet_to_md(args.arg_filename, &render_options).map_err(|e| e.into())
+            }
             Some(FileType::CSV) => csv_file_to_md(args.arg_filename, &render_options),
-            _ => Err(String::from(
-                "No input file type was specified. Please use -t XLSX, -t YAML or -t CSV",
-            )),
+            None => panic!("No FileType specified"),
         },
         OutputType::YAML => {
-            let tables = read_excel_to_named_tables(args.arg_filename, args.flag_sheetname);
-            Ok(mk_yaml_from_table_result(tables))
+            mk_yaml_from_table_result(spreadsheet_to_named_table(args.arg_filename, args.flag_sheetname))
         }
         OutputType::JSON => {
-            let tables = read_excel_to_named_tables(args.arg_filename, args.flag_sheetname);
-            Ok(mk_json_from_table_result(tables))
+            mk_json_from_table_result(spreadsheet_to_named_table(args.arg_filename, args.flag_sheetname))
         }
         OutputType::CSV => {
-            let tables = read_excel_to_named_tables(args.arg_filename, args.flag_sheetname);
-            Ok(mk_csv_from_table_result(tables))
+            mk_csv_from_table_result(spreadsheet_to_named_table(args.arg_filename, args.flag_sheetname))
         }
     };
 
+    // with output_string, print it out, or return the error
     match output_string {
-        Ok(markdown) => {
-            println!("{}", markdown);
+        Ok(makrdown) => {
+            println!("{}", makrdown);
             Ok(())
         }
-        Err(err) => Err(err),
+        Err(e) => Err(e),
     }
 }

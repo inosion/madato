@@ -4,7 +4,7 @@
 * `0.2.0`- 25 Jul 2018
   - Added the `--sheetname <name>` to the command line tool.
 * `0.3.0` - 26 Jul 2018
-  - From the command line, you can export the XLSn/ODS sheet(s) as YAML. 
+  - From the command line, you can export the XLSn/ODS sheet(s) as YAML.
     This is helpful if you want to "store the YAML sheet into a repo"
 * `0.4.0` - 26 Jul 2018
   - To help with CI/CD type environments, and scripting, you can list out the sheetnames
@@ -14,3 +14,7 @@
   - Renamed to `madato` - rhymes with tomato
 * `0.5.1` - 12 Aug 2018
   - tidy up for crates.io release
+* `0.6.0` - 4 May 2024
+  - added CSV support
+* `0.7.0` - 5 May 2024
+  - Added pything library. Can now use it in python

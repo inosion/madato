@@ -10,3 +10,8 @@ target/
 .vscode/
 
 .~lock*
+
+.venv
+
+
+__pycache__/

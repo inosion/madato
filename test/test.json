@@ -1,0 +1,19 @@
+[
+  {
+    "data1": "somevalue",
+    "data2": "someother value here",
+    "col3": 100,
+    "col4": "gar gar"
+  },
+  {
+    "data1": "that",
+    "data2": "nice",
+    "col3": "190x"
+  },
+  {
+    "data1": "this",
+    "data2": "someother value here",
+    "col3": 100,
+    "col4": "ta da"
+  }
+]

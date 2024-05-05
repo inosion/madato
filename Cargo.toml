@@ -8,4 +8,7 @@ members = [
 
     # binary command line of madato and madato_cal
     "madato_cmd",
+
+    # python bindings for madato and madato_cal
+    "madato_py",
 ]

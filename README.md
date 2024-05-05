@@ -10,10 +10,12 @@
 
 Windows, Mac and Linux
 
-Converts XLSX and ODS Spreadsheets to 
+Converts XLSX and ODS Spreadsheets to
 - JSON
-- YAML 
+- YAML
 - Markdown
+
+Converts JSON, YAML and CSV to Markdown.
 
 ### TL;DR
 
@@ -23,12 +25,15 @@ madato table -t XLSX -o MD   --sheetname Sheet2         path/to/workbook.xlsx
 madato table -t XLSX -o YAML --sheetname 'Annual Sales' path/to/workbook.xlsx
 madato table -t XLSX -o YAML path/to/workbook.ods
 madato table -t YAML -o MD   path/to/workbook.yaml
+madato table -t JSON -o MD   path/to/data.json
+madato table -t XLSX -o CSV  path/to/workbook.xlsx
+madato table -t CSV  -o MD   path/to/csv_file.csv
 ```
 
 --------------------------------------------------------------------------------
 
 The tools is primarly centered around getting tabular data (spreadsheets, CSVs)
-into Markdown. 
+into Markdown.
 
 It currently supports:
 - Reading a XLS*, ODS Spreadsheet or YAML file `-- to -->` Markdown
@@ -40,10 +45,11 @@ When generating the output:
 - Re-order the columns, or repeat them using the same column feature
 - Only generate a table for a named "sheet" (applicable for the XLS/ODS formats)
 
-Madato is: 
+Madato is:
 - Command Line Tool (Windows, Mac, Linux) - good for CI/CD preprocessing
 - Rust Library - Good for integration into Rust Markdown tooling
 - Node JS WASM API - To be used later for Atom and VSCode Extensions
+- Python library
 
 Madato expects that every column has a heading row. That is, the first row are headings/column names. If a cell in that first row is blank, it will create `NULL0..NULLn` entries as required.
 
@@ -116,16 +122,16 @@ madato uses:
 
 ### Sheet List
 
-You can list the "sheets" of an XLS*, ODS file with 
+You can list the "sheets" of an XLS*, ODS file with
 
 ```
-$ madato sheetlist test/sample_multi_sheet.xlsx 
+$ madato sheetlist test/sample_multi_sheet.xlsx
 Sheet1
 second_sheet
 3rd Sheet
 ```
 
-### YAML to Markdown 
+### YAML to Markdown
 
 Madato reads a "YAML" file, in the same way it can a Spreadsheet.
 This is useful for "keeping" tabular data in your source repository, and perhaps not
@@ -177,12 +183,14 @@ If you omit the sheet name, it will dump all sheets into an order map of array o
 * `[X]` Native Binary Command Line (windows, linux, osx)
 * `[X]` Read an XLSX file and produce a Markdown Table
 * `[X]` Read an ODS file and produce a Markdown Table
-* `[ ]` Read a CSV, TSV, PSV (etc) file and produce a Markdown Table
+* `[X]` Read a CSV and write a CSV
+* `[ ]` TSV, PSV (etc) file and produce a Markdown Table
 * `[ ]` Support Nested Structures in the YAML input
 * `[ ]` Read a Markdown File, and select the "table" and turn it back into YAML
+* `[ ]` Python API
 
 ### Future Goals
-* Finish the testing and publishing of the JS WASM Bindings. (PS - it works.. 
+* Finish the testing and publishing of the JS WASM Bindings. (PS - it works..
   (see : [test/www-sample](test/www-sample) and the [Makefile](Makefile) )
 * Embed the "importing" of YAML, CSV and XLS* files into the `mume` Markdown Preview Enhanced Plugin. [https://shd101wyy.github.io/markdown-preview-enhanced/](https://shd101wyy.github.io/markdown-preview-enhanced/) So we can have Awesome Markdown Documents.
 * Provide a `PreRenderer` for `[rust-lang-nursery/mdBook](https://github.com/rust-lang-nursery/mdBook) to "import" MD tables from files.

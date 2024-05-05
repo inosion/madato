@@ -394,12 +394,12 @@ fn can_mk_table_with_value_regex() {
 /// table at the beginning.
 ///
 pub fn named_table_to_md(
-    table: Result<NamedTable<String, String>, ErroredTable>,
+    table: &Result<NamedTable<String, String>, MadatoError>,
     print_name: bool,
     render_options: &Option<RenderOptions>,
 ) -> String {
     match table {
-        Err((name, error)) => format!("Sheet `{}` errored: {}", name, error),
+        Err(e) => format!("**Table errored**: {}", e),
         Ok((name, table_data)) => {
             if print_name {
                 format!("**{}**\n{}", name, mk_table(&table_data, render_options))
