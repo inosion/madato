@@ -8,7 +8,8 @@ use madato_cal::spreadsheet_to_named_table as internal_spreadsheet_to_named_tabl
 use madatointernal::csv::csv_file_to_md as internal_csv_file_to_md;
 use madatointernal::csv::mk_csv_from_table_result as internal_mk_csv_from_table_result;
 use madatointernal::csv::mk_md_table_from_csv as internal_mk_md_table_from_csv;
-use madatointernal::types::RenderOptions;
+use madatointernal::types::RenderOptions as InternalRenderOptions;
+use madatointernal::types::KVFilter as InternalKVFilter;
 use madatointernal::yaml::mk_json_from_table_result as internal_mk_json_from_table_result;
 use madatointernal::yaml::mk_md_table_from_yaml as internal_mk_md_table_from_yaml;
 // use madatointernal::mk_table as internal_mk_table;
@@ -28,78 +29,89 @@ fn from_madato_error(e: MadatoError) -> PyErr {
     }
 }
 
+fn from_python_render_options(
+    ro: &Option<RenderOptions>,
+) -> Option<InternalRenderOptions> {
+    match ro {
+        Some(ro) => Some(InternalRenderOptions {
+            filters: ro.filters.clone(),
+            headings: ro.headings.clone(),
+            sheet_name: ro.sheet_name.clone(),
+        }),
+        None => None,
+    }
+}
+
 #[pyclass]
 #[derive(Clone)]
-pub struct PyRenderOptions(RenderOptions);
+pub struct RenderOptions {
+    /// Filters to apply to the data
+    pub filters: Option<Vec<madatointernal::types::KVFilter>>,
+
+    /// Column headings to use
+    pub headings: Option<madatointernal::types::Headers>,
+
+    /// When XLSX, ODS, the sheet name to use
+    pub sheet_name: Option<String>,
+}
 
 #[pyfunction]
 pub fn yaml_file_to_md(
     filename: String,
-    render_options: Option<PyRenderOptions>,
+    render_options: Option<RenderOptions>,
 ) -> PyResult<String> {
-    internal_yaml_file_to_md(filename, &render_options.map(|r| r.0)).map_err(from_madato_error)
+    internal_yaml_file_to_md(filename, &from_python_render_options(&render_options)).map_err(from_madato_error)
 }
 
 #[pyfunction]
 pub fn yaml_str_to_md(
     yaml_str: String,
-    render_options: Option<PyRenderOptions>,
+    render_options: Option<RenderOptions>,
 ) -> PyResult<String> {
     Ok(internal_mk_md_table_from_yaml(
         &yaml_str,
-        &render_options.map(|r| r.0),
+        &from_python_render_options(&render_options),
     ))
 }
-
-// #[pyfunction]
-// pub fn yaml_to_md(yaml: &PyAny, render_options: Option<PyRenderOptions>) -> PyResult<String> {
-//     // Ok(internal_mk_md_table_from_yaml(&yaml, &render_options.map(|r| r.0)))
-//     Python::with_gil(|py| {
-//         let table: &[TableRow<String, String>] = depythonize_bound(yaml.into_bound(py)).unwrap();
-//         Ok(internal_mk_table(&table, &render_options.map(|r| r.0)))
-
-//     })
-
-// }
 
 #[pyfunction]
 pub fn json_file_to_md(
     filename: String,
-    render_options: Option<PyRenderOptions>,
+    render_options: Option<RenderOptions>,
 ) -> PyResult<String> {
-    internal_yaml_file_to_md(filename, &render_options.map(|r| r.0)).map_err(from_madato_error)
+    internal_yaml_file_to_md(filename, &from_python_render_options(&render_options)).map_err(from_madato_error)
 }
 
 #[pyfunction]
-pub fn json_str_to_md(json: String, render_options: Option<PyRenderOptions>) -> PyResult<String> {
+pub fn json_str_to_md(json: String, render_options: Option<RenderOptions>) -> PyResult<String> {
     Ok(internal_mk_md_table_from_yaml(
         &json,
-        &render_options.map(|r| r.0),
+        &from_python_render_options(&render_options),
     ))
 }
 
 #[pyfunction]
 pub fn csv_file_to_md(
     filename: String,
-    render_options: Option<PyRenderOptions>,
+    render_options: Option<RenderOptions>,
 ) -> PyResult<String> {
-    internal_csv_file_to_md(filename, &render_options.map(|r| r.0)).map_err(from_madato_error)
+    internal_csv_file_to_md(filename, &from_python_render_options(&render_options)).map_err(from_madato_error)
 }
 
 #[pyfunction]
-pub fn csv_to_md(csv: String, render_options: Option<PyRenderOptions>) -> PyResult<String> {
+pub fn csv_to_md(csv: String, render_options: Option<RenderOptions>) -> PyResult<String> {
     Ok(internal_mk_md_table_from_csv(
         &csv,
-        &render_options.map(|r| r.0),
+        &from_python_render_options(&render_options),
     ))
 }
 
 #[pyfunction]
 pub fn spreadsheet_to_md(
     filename: String,
-    render_options: Option<PyRenderOptions>,
+    render_options: Option<RenderOptions>,
 ) -> PyResult<String> {
-    internal_spreadsheet_to_md(filename, &render_options.map(|r| r.0))
+    internal_spreadsheet_to_md(filename, &from_python_render_options(&render_options))
         .map_err(|e| from_madato_error(e.into()))
 }
 

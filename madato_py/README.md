@@ -54,3 +54,11 @@ maturin develop   # makes a wheel
 pytest
 ```
 
+## Creating a Release
+
+```
+❯ docker run --rm -v $(pwd)/..:/io --workdir /io/madato_py ghcr.io/pyo3/maturin build --release --target x86_64-pc-windows-msvc -i python3.10
+❯ docker run --rm -v $(pwd)/..:/io --workdir /io/madato_py ghcr.io/pyo3/maturin build --release
+```
+
+

@@ -16,5 +16,6 @@ crate-type = ["cdylib"]
 [dependencies]
 madato          = { path = "../madato" }
 madato_cal          = { path = "../madato_cal" }
-pyo3 = { version = "0.21.2", features = ["extension-module"] }
+pyo3 = { version = "0.21.2", features = ["extension-module", "generate-import-lib"] }
+
 pythonize = "0.21.1"
