@@ -44,8 +44,9 @@ jobs:
           tag: ${{ github.ref }}
       - run: echo "🍏 This job's status is ${{ job.status }}."
 
-      # publsh to crates.io
-
+  crate-publish:
+    name: publish to crates.io
+    runs-on: ubuntu-latest
       - uses: actions-rs/cargo@v1
         with:
           command: login
