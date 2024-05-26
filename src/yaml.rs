@@ -127,42 +127,42 @@ pub fn mk_md_table_from_yaml(yaml: &str, render_options: &Option<RenderOptions>)
 
 /// Given results of tables, throw them back out as YAML
 pub fn mk_yaml_from_table_result(
-    tables: Vec<Result<NamedTable<String, String>, ErroredTable>>,
-) -> String {
+    tables: Vec<Result<NamedTable<String, String>, MadatoError>>,
+) -> Result<String, MadatoError> {
     let table_map: LinkedHashMap<String, Table<String, String>> =
         tables.into_iter().filter_map(Result::ok).collect();
 
     // if we only have one table, strip off the key (get just the value)
     if table_map.len() == 1 {
-        serde_yaml::to_string(&table_map.values().next().unwrap()).unwrap()
+        serde_yaml::to_string(&table_map.values().next()).map_err(|e| e.into())
     } else {
-        serde_yaml::to_string(&table_map).unwrap()
+        serde_yaml::to_string(&table_map).map_err(|e| e.into())
     }
 }
 
 /// Given results of tables, throw them back out as JSON
 pub fn mk_json_from_table_result(
-    tables: Vec<Result<NamedTable<String, String>, ErroredTable>>,
-) -> String {
+    tables: Vec<Result<NamedTable<String, String>, MadatoError>>,
+) -> Result<String, MadatoError> {
     let table_map: LinkedHashMap<String, Table<String, String>> =
         tables.into_iter().filter_map(Result::ok).collect();
 
     // if we only have one table, strip off the key (get just the value)
     if table_map.len() == 1 {
-        serde_json::to_string_pretty(&table_map.values().next().unwrap()).unwrap()
+        serde_json::to_string_pretty(&table_map.values().next()).map_err(|e| e.into())
     } else {
-        serde_json::to_string_pretty(&table_map).unwrap()
+        serde_json::to_string_pretty(&table_map).map_err(|e| e.into())
     }
 }
 
 pub fn yaml_file_to_md(
     filename: String,
     render_options: &Option<RenderOptions>,
-) -> Result<String, String> {
-    let mut file = File::open(filename).expect("Unable to open the file");
+) -> Result<String, MadatoError> {
+    let mut file = File::open(filename)?; //.expect("Unable to open the file");
     let mut contents = String::new();
-    file.read_to_string(&mut contents)
-        .expect("Unable to read the file");
+    file.read_to_string(&mut contents)?;
+    //.expect("Unable to read the file");
 
     Ok(mk_md_table_from_yaml(&contents, render_options))
 }

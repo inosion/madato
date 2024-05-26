@@ -1,5 +1,6 @@
 use linked_hash_map::LinkedHashMap;
 use regex::Regex;
+use thiserror::Error;
 
 /*
  * Table / internal data types.
@@ -10,6 +11,27 @@ pub type MultiTables<K, V> = Vec<Table<K, V>>;
 pub type Headers = Vec<String>;
 pub type NamedTable<K, V> = (String, Table<K, V>);
 pub type ErroredTable = (String, String);
+
+#[derive(Error, Debug)]
+pub enum MadatoError {
+    #[error("Problem reading file: {0}")]
+    IOError(#[from] std::io::Error),
+
+    #[error("Problem parsing YAML: {0}")]
+    YamlError(#[from] serde_yaml::Error),
+
+    #[error("Problem parsing JSON: {0}")]
+    JsonError(#[from] serde_json::Error),
+
+    #[error("Problem parsing CSV: {0}")]
+    CsvError(#[from] csv::Error),
+
+    #[error("Problem with conversion: {0}")]
+    DataError(#[from] std::string::FromUtf8Error),
+
+    #[error("Problem parsing XLSX, ODS: {0}")]
+    CalError(String),
+}
 
 /*
  * Filtering
@@ -76,7 +98,12 @@ impl KVFilter {
  */
 #[derive(Default, Clone)]
 pub struct RenderOptions {
+    /// Filters to apply to the data
     pub filters: Option<Vec<KVFilter>>,
+
+    /// Column headings to use
     pub headings: Option<Headers>,
+
+    /// When XLSX, ODS, the sheet name to use
     pub sheet_name: Option<String>,
 }

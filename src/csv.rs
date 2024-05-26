@@ -34,8 +34,8 @@ pub fn mk_md_table_from_csv(csv: &str, render_options: &Option<RenderOptions>) -
 
 /// Given results of tables, throw them back out as csv
 pub fn mk_csv_from_table_result(
-    tables: Vec<Result<NamedTable<String, String>, ErroredTable>>,
-) -> String {
+    tables: Vec<Result<NamedTable<String, String>, MadatoError>>,
+) -> Result<String, MadatoError> {
     let table_map: LinkedHashMap<String, Table<String, String>> =
         tables.into_iter().filter_map(Result::ok).collect();
 
@@ -44,44 +44,46 @@ pub fn mk_csv_from_table_result(
         let (_, table) = table_map.into_iter().next().unwrap();
         let mut wtr = csv::Writer::from_writer(vec![]);
         if let Some(first_row) = table.iter().next() {
-            wtr.write_record(first_row.keys())
-                .expect("Failed to serialize headers");
+            wtr.write_record(first_row.keys())?;
+            // .expect("Failed to serialize headers");
         }
         for row in table {
-            wtr.write_record(row.values())
-                .expect("Failed to serialize row");
+            wtr.write_record(row.values())?;
+            // .expect("Failed to serialize row");
         }
-        String::from_utf8(wtr.into_inner().expect("Failed to write CSV"))
-            .expect("Failed to convert CSV to string")
+        let r = wtr
+            .into_inner()
+            .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
+        String::from_utf8(r).map_err(|e| e.into())
     } else {
         let mut csvs = Vec::new();
         for (_, table) in table_map {
             let mut wtr = csv::Writer::from_writer(vec![]);
             if let Some(first_row) = table.iter().next() {
-                wtr.write_record(first_row.keys())
-                    .expect("Failed to serialize headers");
+                wtr.write_record(first_row.keys())?;
+                // .expect("Failed to serialize headers");
             }
             for row in table {
-                wtr.write_record(row.values())
-                    .expect("Failed to serialize row");
+                wtr.write_record(row.values())?;
+                // .expect("Failed to serialize row");
             }
             csvs.push(
-                String::from_utf8(wtr.into_inner().expect("Failed to write CSV"))
-                    .expect("Failed to convert CSV to string"),
+                String::from_utf8(wtr.into_inner().unwrap())
+                    .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?, //.expect("Failed to write CSV"))
+                                                                                      //.expect("Failed to convert CSV to string"),
             );
         }
-        csvs.join("\n")
+        Ok(csvs.join("\n"))
     }
 }
 
 pub fn csv_file_to_md(
     filename: String,
     render_options: &Option<RenderOptions>,
-) -> Result<String, String> {
-    let mut file = File::open(filename).expect("Unable to open the file");
+) -> Result<String, MadatoError> {
+    let mut file = File::open(filename)?;
     let mut contents = String::new();
-    file.read_to_string(&mut contents)
-        .expect("Unable to read the file");
+    file.read_to_string(&mut contents)?;
 
     Ok(mk_md_table_from_csv(&contents, render_options))
 }
@@ -121,7 +123,7 @@ mod tests {
             .collect()],
         );
         let tables = vec![Ok(table)];
-        let csv = mk_csv_from_table_result(tables);
+        let csv = mk_csv_from_table_result(tables).unwrap();
         assert!(csv.contains("header1,header2"));
         assert!(csv.contains("value1,value2"));
     }

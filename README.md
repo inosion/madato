@@ -1,4 +1,3 @@
-
 # madato &emsp; [![Build Status]][travis] [![Latest Version]][crates.io]
 
 [Build Status]: https://travis-ci.org/inosion/madato.svg?branch=master
@@ -8,31 +7,18 @@
 
 ***madato is a library and command line tool for working tabular data, and Markdown***
 
-Windows, Mac and Linux
-
-Converts XLSX and ODS Spreadsheets to 
-- JSON
-- YAML 
-- Markdown
-
-### TL;DR
-
-```
-madato table -t XLSX -o JSON --sheetname Sheet2         path/to/workbook.xlsx
-madato table -t XLSX -o MD   --sheetname Sheet2         path/to/workbook.xlsx
-madato table -t XLSX -o YAML --sheetname 'Annual Sales' path/to/workbook.xlsx
-madato table -t XLSX -o YAML path/to/workbook.ods
-madato table -t YAML -o MD   path/to/workbook.yaml
-```
-
 --------------------------------------------------------------------------------
 
 The tools is primarly centered around getting tabular data (spreadsheets, CSVs)
 into Markdown. 
 
-It currently supports:
-- Reading a XLS*, ODS Spreadsheet or YAML file `-- to -->` Markdown
-- Reading a XLS*, ODS Spreadsheet `-- to -->` Markdown
+It is split into 3 separate crates.
+
+1. `madato` - this library, which has YAML support
+2. `madato_cal` - which provides support for reading and writing XLS and ODS Spreadsheets
+3. `madato_cmd` - providing a helpful command line tool of the above
+
+# Details
 
 When generating the output:
 - Filter the Rows using basic Regex over Key/Value pairs
@@ -141,7 +127,7 @@ the XLS.
 |100 | ta da |  this   |someother value here|
 ```
 
-*Please see the [test/test.yml](test/test.yml) file for the expected layout of this file*
+*Please see the [test/www-sample/test.yml](test/www-sample/test.yml) file for the expected layout of this file*
 
 ### Excel/ODS to YAML
 
