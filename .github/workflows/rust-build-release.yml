@@ -30,11 +30,11 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --release --all-features
+          args: --release
       - uses: actions-rs/cargo@v1
         with:
           command: build
-          args: --release --all-features
+          args: --release
       - name: Upload binaries to release
         uses: svenstaro/upload-release-action@v2
         with:
