@@ -19,6 +19,7 @@ pub mod yaml;
 #[cfg(feature = "spreadsheets")]
 pub mod cal;
 
+#[cfg(feature = "python")]
 pub mod py;
 
 use indexmap::IndexSet;

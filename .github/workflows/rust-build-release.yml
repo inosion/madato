@@ -1,4 +1,4 @@
-name: Publish
+name: Rust CI
 on:
   push:
     tags:
