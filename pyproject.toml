@@ -20,17 +20,13 @@ classifiers = [
   'Programming Language :: Python :: 3.11',
   'Programming Language :: Python :: 3.12',
   "License :: OSI Approved :: MIT License",
-  "License :: OSI Approved :: Apache 2.0 License",
+  "License :: OSI Approved :: Apache Software License",
   'Operating System :: POSIX :: Linux',
   'Operating System :: Microsoft :: Windows',
   'Operating System :: MacOS',
   'Topic :: Software Development :: Libraries :: Python Modules',
   'Topic :: Text Processing :: Markup',
   'Topic :: Text Processing :: Markup :: Markdown',
-  'Topic :: Text Processing :: Markup :: YAML',
-  'Topic :: Text Processing :: Markup :: JSON',
-  'Topic :: Text Processing :: Markup :: CSV',
-  'Topic :: Text Processing :: Markup :: XLSX',
 ]
 license = { text = "MIT License" }
 

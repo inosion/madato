@@ -1,18 +1,54 @@
-# madato &emsp; [![Build Status]][travis] [![Latest Version]][crates.io]
+# madato
 
-[Build Status]: https://travis-ci.org/inosion/madato.svg?branch=master
-[travis]: https://travis-ci.org/inosion/madato
-[Latest Version]: https://img.shields.io/crates/v/madato.svg
-[crates.io]: https://crates.io/crates/madato
+![Rust CI workflow](https://github.com/inosion/madato/actions/workflows/rust-build-release.yml/badge.svg) ![Python CI workflow](https://github.com/inosion/madato/actions/workflows/python-build-release.yml/badge.svg) ![Rust Version](https://img.shields.io/crates/v/madato.svg) ![Rust Version](https://img.shields.io/pypi/v/madato.svg)
+
 
 ***madato is a library and command line tool for working tabular data, and Markdown***
 
 --------------------------------------------------------------------------------
 
+<!-- @import "[TOC]" {cmd="toc" depthFrom=1 depthTo=6 orderedList=false} -->
+
+<!-- code_chunk_output -->
+
+- [madato](#madato)
+  - [Usage](#usage)
+    - [CLI](#cli)
+    - [Rust](#rust)
+    - [Python](#python)
+  - [Details](#details)
+    - [Example CLI usage](#example-cli-usage)
+  - [Internals](#internals)
+  - [Tips](#tips)
+  - [Python](#python-1)
+  - [More Commandline](#more-commandline)
+    - [Sheet List](#sheet-list)
+    - [YAML to Markdown](#yaml-to-markdown)
+    - [Excel/ODS to YAML](#excelods-to-yaml)
+  - [Features](#features)
+  - [Future Goals](#future-goals)
+    - [Known Issues](#known-issues)
+  - [License](#license)
+    - [Contribution](#contribution)
+
+<!-- /code_chunk_output -->
+
+
+
+1. `madato (library)` - this library, which reads YAML, CSV, JSON, XLSX/ODS and writes Markdown
+3. `madato (cli)` - providing a helpful command line tool of the above
+4. The full library is available as a python module, or a rust library.
+
 The tools is primarly centered around getting tabular data (spreadsheets, CSVs)
 into Markdown. 
 
-It is a library and a CLI. The library is both Rust, and a Python lib.
+## Usage
+### CLI
+
+Download from [https://github.com/inosion/madato/releases](https://github.com/inosion/madato/releases)
+
+### Rust
+
 The library, if you need spreadsheet support, then add the `spreadsheets` feature.
 
 ```
@@ -20,12 +56,12 @@ madato = { version = "0", features = ["spreadsheets"] }
 
 ```
 
-1. `madato (library)` - this library, which has YAML support
-2. `feature = "spreadsheets"` - which provides support for reading and writing XLS and ODS Spreadsheets
-3. `madato (cli)` - providing a helpful command line tool of the above
-4. The full library is available as a python module
+### Python 
+```
+pip install madato
+```
 
-# Details
+## Details
 
 When generating the output:
 - Filter the Rows using basic Regex over Key/Value pairs
@@ -40,11 +76,11 @@ Madato is:
 
 Madato expects that every column has a heading row. That is, the first row are headings/column names. If a cell in that first row is blank, it will create `NULL0..NULLn` entries as required.
 
-## Examples
+### Example CLI usage
 
 * Extract the `3rd Sheet` sheet from an MS Excel Document
 ```
-08:39 $ target/debug/madato table --type xlsx test/sample_multi_sheet.xlsx --sheetname "3rd Sheet"
+08:39 $ madato table --type xlsx test/sample_multi_sheet.xlsx --sheetname "3rd Sheet"
 |col1|col2| col3 |col4 |                         col5                          |NULL5|
 |----|----|------|-----|-------------------------------------------------------|-----|
 | 1  |that| are  |wider|  value ‘aaa’ is in the next cell, but has no heading  | aaa |
@@ -53,7 +89,7 @@ Madato expects that every column has a heading row. That is, the first row are h
 
 * Extract and reorder just 3 Columns
 ```
-08:42 $ target/debug/madato table --type xlsx test/sample_multi_sheet.xlsx --sheetname "3rd Sheet" -c col2 -c col3 -c NULL5
+08:42 $ madato table --type xlsx test/sample_multi_sheet.xlsx --sheetname "3rd Sheet" -c col2 -c col3 -c NULL5
 |col2| col3 |NULL5|
 |----|------|-----|
 |that| are  | aaa |
@@ -64,7 +100,7 @@ Madato expects that every column has a heading row. That is, the first row are h
 * Use a Filter, where `Heading 4` values must only have a letter or number.
 
 ```
-08:48 $ target/debug/madato table --type xlsx test/sample_multi_sheet.xlsx --sheetname second_sheet -c "Heading 4" -f 'Heading 4=[a-zA-Z0-9]'
+08:48 $ madato table --type xlsx test/sample_multi_sheet.xlsx --sheetname second_sheet -c "Heading 4" -f 'Heading 4=[a-zA-Z0-9]'
 |        Heading 4         |
 |--------------------------|
 |         << empty         |
@@ -79,7 +115,7 @@ Madato expects that every column has a heading row. That is, the first row are h
 * Filtering on a Column, ensuring that a "+" is there in `Trend` Column
 
 ```
-09:00 $ target/debug/madato table --type xlsx test/sample_multi_sheet.xlsx --sheetname Sheet1 -c Rank -c Language -c Trend -f "Trend=\+"
+09:00 $ madato table --type xlsx test/sample_multi_sheet.xlsx --sheetname Sheet1 -c Rank -c Language -c Trend -f "Trend=\+"
 |                         Rank                         |  Language  |Trend |
 |------------------------------------------------------|------------|------|
 |                          1                           |   Python   |+5.5 %|
@@ -96,6 +132,7 @@ madato uses:
 - [calamine](https://github.com/tafia/calamine) for reading XLS and ODS sheets
 - [wasm bindings](https://github.com/rustwasm/wasm-bindgen) to created JS API versions of the Rust API
 - [regex]() for filtering, and [serde]() for serialisation.
+- PyO3 and Maturin for Python Support
 
 ## Tips
 
@@ -104,7 +141,7 @@ madato uses:
 
 ## Python 
 
-```
+```python
 pip install madato
 
 # py
@@ -174,7 +211,7 @@ madato table -t xlsx test/sample_multi_sheet.xslx.xlsx -s Sheet1 -o yaml
 If you omit the sheet name, it will dump all sheets into an order map of array of maps.
 
 
-### Features
+## Features
 
 * `[x]` Reads a formatted YAML string and renders a Markdown Table
 * `[x]` Can take an optional list of column headings, and only display those from the table (filtering out other columns present)
@@ -187,13 +224,14 @@ If you omit the sheet name, it will dump all sheets into an order map of array o
 * `[ ]` Support Nested Structures in the YAML input
 * `[ ]` Read a Markdown File, and select the "table" and turn it back into YAML
 
-### Future Goals
+## Future Goals
 * Finish the testing and publishing of the JS WASM Bindings. (PS - it works.. 
   (see : [test/www-sample](test/www-sample) and the [Makefile](Makefile) )
 * Embed the "importing" of YAML, CSV and XLS* files into the `mume` Markdown Preview Enhanced Plugin. [https://shd101wyy.github.io/markdown-preview-enhanced/](https://shd101wyy.github.io/markdown-preview-enhanced/) So we can have Awesome Markdown Documents.
 * Provide a `PreRenderer` for `[rust-lang-nursery/mdBook](https://github.com/rust-lang-nursery/mdBook) to "import" MD tables from files.
 
 ### Known Issues
+
 * A Spreadsheet Cell with a Date will come out as the "magic" Excel date number :-( - https://github.com/tafia/calamine/issues/116
 
 ## License
