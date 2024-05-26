@@ -12,11 +12,18 @@
 The tools is primarly centered around getting tabular data (spreadsheets, CSVs)
 into Markdown. 
 
-It is split into 3 separate crates.
+It is a library and a CLI. The library is both Rust, and a Python lib.
+The library, if you need spreadsheet support, then add the `spreadsheets` feature.
 
-1. `madato` - this library, which has YAML support
-2. `madato_cal` - which provides support for reading and writing XLS and ODS Spreadsheets
-3. `madato_cmd` - providing a helpful command line tool of the above
+```
+madato = { version = "0", features = ["spreadsheets"] }
+
+```
+
+1. `madato (library)` - this library, which has YAML support
+2. `feature = "spreadsheets"` - which provides support for reading and writing XLS and ODS Spreadsheets
+3. `madato (cli)` - providing a helpful command line tool of the above
+4. The full library is available as a python module
 
 # Details
 
@@ -94,9 +101,20 @@ madato uses:
 
 * I have found that copying the "table" I want from a website: HTML, to a spreadsheet, then through `madato` gives an excellent Markdown table of the original.
 
-## Rust API
 
-## JS API
+## Python 
+
+```
+pip install madato
+
+# py
+from IPython.display import display, Markdown
+import madato
+display(Markdown(madato.spreadsheet_to_md("../test/Financial Sample.xlsx")
+print(madato.spreadsheet_to_md(str(my_sample_spreadsheet)))
+
+```
+* For more examples see [pysource/tests](pysource/tests)
 
 ## More Commandline
 
@@ -163,7 +181,9 @@ If you omit the sheet name, it will dump all sheets into an order map of array o
 * `[X]` Native Binary Command Line (windows, linux, osx)
 * `[X]` Read an XLSX file and produce a Markdown Table
 * `[X]` Read an ODS file and produce a Markdown Table
-* `[ ]` Read a CSV, TSV, PSV (etc) file and produce a Markdown Table
+* `[X]` Read a CSV
+* `[X]` Published as a Python Module
+* `[ ]` TSV, PSV (etc) file and produce a Markdown Table
 * `[ ]` Support Nested Structures in the YAML input
 * `[ ]` Read a Markdown File, and select the "table" and turn it back into YAML
 

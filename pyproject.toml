@@ -48,14 +48,9 @@ Changelog = 'https://github.com/inosion/madato/releases'
 
 
 [tool.maturin]
-# module-name = "madato.madato"
 bindings = 'pyo3'
 python-source = "pysource"
-features = ["pyo3/extension-module"]
-
-# include = [
-#     { format = "sdist", path = "Cargo.lock" },
-# ]
+features = ["pyo3/extension-module", "python"]
 
 [tool.pytest.ini_options]
 testpaths = "pysource/tests"
