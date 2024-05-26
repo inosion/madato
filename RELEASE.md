@@ -17,4 +17,4 @@
 * `0.6.0` - 4 May 2024
   - added CSV support
 * `0.7.0` - 5 May 2024
-  - Added pything library. Can now use it in python
+  - Added python library. Can now use it in python
