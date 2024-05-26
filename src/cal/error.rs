@@ -1,3 +1,4 @@
+use crate::types::MadatoError;
 use thiserror::Error;
 
 #[derive(Error, Debug, Clone)]
@@ -45,9 +46,8 @@ impl From<calamine::Error> for MadatoCalError {
     }
 }
 
-impl From<MadatoCalError> for madato::types::MadatoError {
+impl From<MadatoCalError> for MadatoError {
     fn from(e: MadatoCalError) -> Self {
-        madato::types::MadatoError::CalError(e.to_string())
+        MadatoError::CalError(e.to_string())
     }
-
 }

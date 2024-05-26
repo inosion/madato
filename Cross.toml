@@ -1,0 +1,37 @@
+[target.aarch64-unknown-linux-gnu]
+pre-build = [
+    "dpkg --add-architecture $CROSS_DEB_ARCH",
+    "apt-get update && apt install -y software-properties-common",
+    "add-apt-repository ppa:deadsnakes/ppa",
+    # "apt install -y python3.9 python3.10 python3.11 python3.12 python3.10-pip",
+    "apt install -y python3.10 python3-pip",
+    "pip3 install maturin"
+]
+
+[target.i686-pc-windows-gnu]
+pre-build = [
+    "dpkg --add-architecture $CROSS_DEB_ARCH",
+    "apt-get update && apt install -y software-properties-common",
+    "add-apt-repository ppa:deadsnakes/ppa",
+    # "apt install -y python3.9 python3.10 python3.11 python3.12 python3.10-pip",
+    "apt install -y python3.10 python3-pip",
+    "pip3 install maturin"
+]
+
+[target.x86_64-unknown-linux-gnu]
+pre-build = [
+    "dpkg --add-architecture $CROSS_DEB_ARCH",
+    "apt-get update && apt install -y software-properties-common",
+    "add-apt-repository ppa:deadsnakes/ppa",
+    # "apt install -y python3.9 python3.10 python3.11 python3.12 python3.10-pip",
+    "apt install -y python3.10 python3-pip",
+    "pip3 install maturin"
+]
+[build.env]
+passthrough = [
+  "RUST_BACKTRACE=1",
+  "PYO3_PYTHON=/usr/bin/python3.10",
+  "PYO3_CROSS=1",
+  "PYO3_CROSS_PYTHON_VERSION=3.10",
+  "PYO3_CROSS_LIB_DIR=/opt/sysroot/usr/lib",
+]

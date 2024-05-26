@@ -2,8 +2,6 @@
 //     slice_patterns, extern_prelude, serde_impl
 // )]
 
-extern crate indexmap;
-
 extern crate linked_hash_map;
 extern crate regex;
 extern crate serde;
@@ -17,6 +15,11 @@ pub mod utils;
 pub mod csv;
 pub mod types;
 pub mod yaml;
+
+#[cfg(feature = "spreadsheets")]
+pub mod cal;
+
+pub mod py;
 
 use indexmap::IndexSet;
 use std::cmp;

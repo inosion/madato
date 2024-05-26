@@ -31,7 +31,6 @@ pub enum MadatoError {
 
     #[error("Problem parsing XLSX, ODS: {0}")]
     CalError(String),
-
 }
 
 /*

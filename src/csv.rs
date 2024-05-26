@@ -6,8 +6,6 @@ use std::error::Error;
 use std::fs::File;
 use std::io::prelude::*;
 
-
-
 fn load_csv(csv: &str) -> Result<Table<String, String>, Box<dyn Error>> {
     let mut rdr = csv::Reader::from_reader(csv.as_bytes());
     let headers = rdr.headers()?.clone();
@@ -47,30 +45,32 @@ pub fn mk_csv_from_table_result(
         let mut wtr = csv::Writer::from_writer(vec![]);
         if let Some(first_row) = table.iter().next() {
             wtr.write_record(first_row.keys())?;
-                // .expect("Failed to serialize headers");
+            // .expect("Failed to serialize headers");
         }
         for row in table {
             wtr.write_record(row.values())?;
-                // .expect("Failed to serialize row");
+            // .expect("Failed to serialize row");
         }
-        let r = wtr.into_inner().map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
-        String::from_utf8(r).map_err(|e|e.into())
+        let r = wtr
+            .into_inner()
+            .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
+        String::from_utf8(r).map_err(|e| e.into())
     } else {
         let mut csvs = Vec::new();
         for (_, table) in table_map {
             let mut wtr = csv::Writer::from_writer(vec![]);
             if let Some(first_row) = table.iter().next() {
                 wtr.write_record(first_row.keys())?;
-                    // .expect("Failed to serialize headers");
+                // .expect("Failed to serialize headers");
             }
             for row in table {
                 wtr.write_record(row.values())?;
-                    // .expect("Failed to serialize row");
+                // .expect("Failed to serialize row");
             }
             csvs.push(
-                String::from_utf8(wtr.into_inner().unwrap()).map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?
-                //.expect("Failed to write CSV"))
-                    //.expect("Failed to convert CSV to string"),
+                String::from_utf8(wtr.into_inner().unwrap())
+                    .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?, //.expect("Failed to write CSV"))
+                                                                                      //.expect("Failed to convert CSV to string"),
             );
         }
         Ok(csvs.join("\n"))

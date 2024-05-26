@@ -1,0 +1,17 @@
+FROM ghcr.io/cross-rs/armv7-unknown-linux-gnueabihf
+RUN apt update && apt install -y --no-install-recommends software-properties-common && \
+    add-apt-repository ppa:deadsnakes/ppa && \
+    apt update
+
+RUN apt search python3
+
+
+RUN  apt install -y --no-install-recommends python3.10 \
+     python3-pip python3-venv && \
+     pip3 install -U pip && \
+     sudo update-alternatives  --set python /usr/bin/python3.19
+
+WORKDIR /builds
+RUN python3 -m venv .venv &&  \
+# .venv/bin/pip3 install toml && \
+    .venv/bin/pip3 install maturin

@@ -159,10 +159,10 @@ pub fn yaml_file_to_md(
     filename: String,
     render_options: &Option<RenderOptions>,
 ) -> Result<String, MadatoError> {
-    let mut file = File::open(filename)?;//.expect("Unable to open the file");
+    let mut file = File::open(filename)?; //.expect("Unable to open the file");
     let mut contents = String::new();
     file.read_to_string(&mut contents)?;
-        //.expect("Unable to read the file");
+    //.expect("Unable to read the file");
 
     Ok(mk_md_table_from_yaml(&contents, render_options))
 }

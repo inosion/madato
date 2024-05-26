@@ -1,22 +1,20 @@
-use madatointernal::types::MadatoError;
 use pyo3::prelude::*;
-extern crate madato as madatointernal;
 // use pythonize::{depythonize_bound, pythonize};
 
-use madato_cal::spreadsheet_to_md as internal_spreadsheet_to_md;
-use madato_cal::spreadsheet_to_named_table as internal_spreadsheet_to_named_table;
-use madatointernal::csv::csv_file_to_md as internal_csv_file_to_md;
-use madatointernal::csv::mk_csv_from_table_result as internal_mk_csv_from_table_result;
-use madatointernal::csv::mk_md_table_from_csv as internal_mk_md_table_from_csv;
-use madatointernal::types::RenderOptions as InternalRenderOptions;
-use madatointernal::types::KVFilter as InternalKVFilter;
-use madatointernal::yaml::mk_json_from_table_result as internal_mk_json_from_table_result;
-use madatointernal::yaml::mk_md_table_from_yaml as internal_mk_md_table_from_yaml;
-// use madatointernal::mk_table as internal_mk_table;
-// use madatointernal::types::TableRow;
+use crate::cal::spreadsheet_to_md as internal_spreadsheet_to_md;
+use crate::cal::spreadsheet_to_named_table as internal_spreadsheet_to_named_table;
+use crate::csv::csv_file_to_md as internal_csv_file_to_md;
+use crate::csv::mk_csv_from_table_result as internal_mk_csv_from_table_result;
+use crate::csv::mk_md_table_from_csv as internal_mk_md_table_from_csv;
+use crate::types::MadatoError;
+use crate::types::RenderOptions as InternalRenderOptions;
+use crate::yaml::mk_json_from_table_result as internal_mk_json_from_table_result;
+use crate::yaml::mk_md_table_from_yaml as internal_mk_md_table_from_yaml;
+// use crate::mk_table as internal_mk_table;
+// use crate::types::TableRow;
 
-use madatointernal::yaml::mk_yaml_from_table_result as internal_mk_yaml_from_table_result;
-use madatointernal::yaml::yaml_file_to_md as internal_yaml_file_to_md;
+use crate::yaml::mk_yaml_from_table_result as internal_mk_yaml_from_table_result;
+use crate::yaml::yaml_file_to_md as internal_yaml_file_to_md;
 
 fn from_madato_error(e: MadatoError) -> PyErr {
     match e {
@@ -29,9 +27,20 @@ fn from_madato_error(e: MadatoError) -> PyErr {
     }
 }
 
-fn from_python_render_options(
-    ro: &Option<RenderOptions>,
-) -> Option<InternalRenderOptions> {
+#[pyclass]
+#[derive(Clone)]
+pub struct RenderOptions {
+    /// Filters to apply to the data
+    pub filters: Option<Vec<crate::types::KVFilter>>,
+
+    /// Column headings to use
+    pub headings: Option<crate::types::Headers>,
+
+    /// When XLSX, ODS, the sheet name to use
+    pub sheet_name: Option<String>,
+}
+
+fn from_python_render_options(ro: &Option<RenderOptions>) -> Option<InternalRenderOptions> {
     match ro {
         Some(ro) => Some(InternalRenderOptions {
             filters: ro.filters.clone(),
@@ -42,32 +51,17 @@ fn from_python_render_options(
     }
 }
 
-#[pyclass]
-#[derive(Clone)]
-pub struct RenderOptions {
-    /// Filters to apply to the data
-    pub filters: Option<Vec<madatointernal::types::KVFilter>>,
-
-    /// Column headings to use
-    pub headings: Option<madatointernal::types::Headers>,
-
-    /// When XLSX, ODS, the sheet name to use
-    pub sheet_name: Option<String>,
-}
-
 #[pyfunction]
 pub fn yaml_file_to_md(
     filename: String,
     render_options: Option<RenderOptions>,
 ) -> PyResult<String> {
-    internal_yaml_file_to_md(filename, &from_python_render_options(&render_options)).map_err(from_madato_error)
+    internal_yaml_file_to_md(filename, &from_python_render_options(&render_options))
+        .map_err(from_madato_error)
 }
 
 #[pyfunction]
-pub fn yaml_str_to_md(
-    yaml_str: String,
-    render_options: Option<RenderOptions>,
-) -> PyResult<String> {
+pub fn yaml_str_to_md(yaml_str: String, render_options: Option<RenderOptions>) -> PyResult<String> {
     Ok(internal_mk_md_table_from_yaml(
         &yaml_str,
         &from_python_render_options(&render_options),
@@ -79,7 +73,8 @@ pub fn json_file_to_md(
     filename: String,
     render_options: Option<RenderOptions>,
 ) -> PyResult<String> {
-    internal_yaml_file_to_md(filename, &from_python_render_options(&render_options)).map_err(from_madato_error)
+    internal_yaml_file_to_md(filename, &from_python_render_options(&render_options))
+        .map_err(from_madato_error)
 }
 
 #[pyfunction]
@@ -91,11 +86,9 @@ pub fn json_str_to_md(json: String, render_options: Option<RenderOptions>) -> Py
 }
 
 #[pyfunction]
-pub fn csv_file_to_md(
-    filename: String,
-    render_options: Option<RenderOptions>,
-) -> PyResult<String> {
-    internal_csv_file_to_md(filename, &from_python_render_options(&render_options)).map_err(from_madato_error)
+pub fn csv_file_to_md(filename: String, render_options: Option<RenderOptions>) -> PyResult<String> {
+    internal_csv_file_to_md(filename, &from_python_render_options(&render_options))
+        .map_err(from_madato_error)
 }
 
 #[pyfunction]
@@ -134,6 +127,7 @@ pub fn spreadsheet_to_csv(filename: String, sheet_name: Option<String>) -> PyRes
 }
 
 #[pymodule]
+#[pyo3(name = "madato")]
 fn madato(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(csv_file_to_md, m)?)?;
     m.add_function(wrap_pyfunction!(csv_to_md, m)?)?;

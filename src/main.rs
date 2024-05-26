@@ -1,14 +1,17 @@
-#[macro_use]
-extern crate serde_derive;
-extern crate docopt;
-extern crate madato;
-extern crate madato_cal;
+use madato::cal::get_sheet_names;
+use madato::cal::spreadsheet_to_md;
+use madato::cal::spreadsheet_to_named_table;
+use madato::csv::csv_file_to_md;
+use madato::csv::mk_csv_from_table_result;
+use madato::types::KVFilter;
+use madato::types::MadatoError;
+use madato::types::RenderOptions;
+use madato::yaml::mk_json_from_table_result;
+use madato::yaml::mk_yaml_from_table_result;
+use madato::yaml::yaml_file_to_md;
 
 use docopt::Docopt;
-use madato::csv::*;
-use madato::types::*;
-use madato::yaml::*;
-use madato_cal::*;
+use serde::Deserialize;
 
 const USAGE: &str = "
 madato utility - Tabular Data Helper
@@ -105,6 +108,7 @@ pub fn version() -> String {
     }
 }
 
+#[cfg(feature = "cli")]
 fn main() -> Result<(), MadatoError> {
     let args: Args = Docopt::new(USAGE)
         .and_then(|d| d.version(Some(version())).deserialize())
@@ -153,15 +157,18 @@ fn main() -> Result<(), MadatoError> {
             Some(FileType::CSV) => csv_file_to_md(args.arg_filename, &render_options),
             None => panic!("No FileType specified"),
         },
-        OutputType::YAML => {
-            mk_yaml_from_table_result(spreadsheet_to_named_table(args.arg_filename, args.flag_sheetname))
-        }
-        OutputType::JSON => {
-            mk_json_from_table_result(spreadsheet_to_named_table(args.arg_filename, args.flag_sheetname))
-        }
-        OutputType::CSV => {
-            mk_csv_from_table_result(spreadsheet_to_named_table(args.arg_filename, args.flag_sheetname))
-        }
+        OutputType::YAML => mk_yaml_from_table_result(spreadsheet_to_named_table(
+            args.arg_filename,
+            args.flag_sheetname,
+        )),
+        OutputType::JSON => mk_json_from_table_result(spreadsheet_to_named_table(
+            args.arg_filename,
+            args.flag_sheetname,
+        )),
+        OutputType::CSV => mk_csv_from_table_result(spreadsheet_to_named_table(
+            args.arg_filename,
+            args.flag_sheetname,
+        )),
     };
 
     // with output_string, print it out, or return the error

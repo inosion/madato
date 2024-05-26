@@ -1,13 +1,11 @@
 // #![feature(slice_patterns)]
 
-extern crate calamine;
-extern crate madato;
 pub mod error;
 
 use calamine::{open_workbook_auto, Data, Reader};
 
-use madato::types::{NamedTable, RenderOptions, TableRow, MadatoError};
-use crate::error::MadatoCalError;
+use crate::named_table_to_md;
+use crate::types::{MadatoError, NamedTable, RenderOptions, TableRow};
 
 ///
 /// Given a path to a Calamine supported Spreadsheet,
@@ -16,12 +14,14 @@ use crate::error::MadatoCalError;
 pub fn spreadsheet_to_md(
     filename: String,
     render_options: &Option<RenderOptions>,
-) -> Result<String, MadatoCalError> {
-    let results =
-        spreadsheet_to_named_table_internal(filename, render_options.clone().and_then(|r| r.sheet_name));
+) -> Result<String, error::MadatoCalError> {
+    let results = spreadsheet_to_named_table_internal(
+        filename,
+        render_options.clone().and_then(|r| r.sheet_name),
+    );
     if results.len() <= 1 {
-        Ok(madato::named_table_to_md(
-            &results[0].clone().map_err(madato::types::MadatoError::from),
+        Ok(named_table_to_md(
+            &results[0].clone().map_err(MadatoError::from),
             false,
             render_options,
         ))
@@ -29,15 +29,21 @@ pub fn spreadsheet_to_md(
         Ok(results
             .iter()
             .map(|table_result| {
-                madato::named_table_to_md(&table_result.clone().map_err(madato::types::MadatoError::from), true, &render_options.clone())
+                named_table_to_md(
+                    &table_result.clone().map_err(MadatoError::from),
+                    true,
+                    &render_options.clone(),
+                )
             })
             .collect::<Vec<String>>()
             .join("\n\n"))
     }
 }
 
-
-pub fn spreadsheet_to_named_table(filename: String, sheetname: Option<String>) -> Vec<Result<NamedTable<String, String>, MadatoError>>{
+pub fn spreadsheet_to_named_table(
+    filename: String,
+    sheetname: Option<String>,
+) -> Vec<Result<NamedTable<String, String>, MadatoError>> {
     let tables = spreadsheet_to_named_table_internal(filename, sheetname);
     tables
         .into_iter()
@@ -45,12 +51,10 @@ pub fn spreadsheet_to_named_table(filename: String, sheetname: Option<String>) -
         .collect()
 }
 
-
-
 fn spreadsheet_to_named_table_internal(
     filename: String,
     sheet_name: Option<String>,
-) -> Vec<Result<NamedTable<String, String>, MadatoCalError>> {
+) -> Vec<Result<NamedTable<String, String>, error::MadatoCalError>> {
     // opens a new workbook
     let mut workbook = open_workbook_auto(filename).expect("Cannot open file");
 
@@ -66,25 +70,26 @@ fn spreadsheet_to_named_table_internal(
         workbook.sheet_names().to_owned()
     };
 
-    let sheets: Vec<Result<NamedTable<String, String>, MadatoCalError>> = sheet_names
+    let sheets: Vec<Result<NamedTable<String, String>, error::MadatoCalError>> = sheet_names
         .iter()
         .map(|name| {
-            let sheet = workbook.worksheet_range(name).map_err(MadatoCalError::from)?;
+            let sheet = workbook
+                .worksheet_range(name)
+                .map_err(error::MadatoCalError::from)?;
             Ok((name.clone(), {
-                    let headers = extract_header_row(&sheet)?;
+                let headers = extract_header_row(&sheet)?;
 
-                    sheet
-                        .rows()
-                        .skip(1)
-                        .map(|row| {
-                            headers
-                                .iter()
-                                .map(|(i, col)| ((**col).to_string(), md_santise(&row[*i])))
-                                .collect::<TableRow<String, String>>()
-                        })
-                        .collect::<Vec<_>>()
-                }))
-
+                sheet
+                    .rows()
+                    .skip(1)
+                    .map(|row| {
+                        headers
+                            .iter()
+                            .map(|(i, col)| ((**col).to_string(), md_santise(&row[*i])))
+                            .collect::<TableRow<String, String>>()
+                    })
+                    .collect::<Vec<_>>()
+            }))
         })
         .collect::<Vec<_>>();
 
@@ -95,11 +100,13 @@ fn spreadsheet_to_named_table_internal(
 /// Internal fn, extract the header row from a sheet
 /// If a cell in the row is empty, it will be replaced with NULL0, NULL1, etc.
 ///
-fn extract_header_row(sheet: &calamine::Range<Data>) -> Result<Vec<(usize, String)>, MadatoCalError> {
+fn extract_header_row(
+    sheet: &calamine::Range<Data>,
+) -> Result<Vec<(usize, String)>, error::MadatoCalError> {
     let first_row: Vec<(usize, String)> = sheet
         .rows()
         .next()
-        .ok_or(MadatoCalError::MissingDataInSheet())?
+        .ok_or(error::MadatoCalError::MissingDataInSheet())?
         .iter()
         .enumerate()
         .map(|(i, c)| match c {
@@ -113,7 +120,7 @@ fn extract_header_row(sheet: &calamine::Range<Data>) -> Result<Vec<(usize, Strin
 ///
 /// Return a Vec<String> of Sheet Names
 ///
-pub fn list_sheet_names(filename: String) -> Result<Vec<String>, MadatoCalError> {
+pub fn list_sheet_names(filename: String) -> Result<Vec<String>, error::MadatoCalError> {
     let workbook = open_workbook_auto(filename)?;
     Ok(workbook.sheet_names().to_owned())
 }
