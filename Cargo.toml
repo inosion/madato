@@ -1,6 +1,6 @@
 [package]
 name = "madato"
-version = "0.7.0"
+version = "0.7.1"
 authors = ["Ramon Buckland <ramon@thebuckland.com>"]
 license = "MIT/Apache-2.0"
 description = "A library and command line tool for reading and writing tabular data (XLS, ODS, CSV, YAML), and Markdown"
