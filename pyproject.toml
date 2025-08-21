@@ -4,7 +4,7 @@ build-backend = "maturin"
 
 [project]
 name = 'madato'
-version = "0.7.0"
+version = "0.7.1"
 requires-python = '>=3.7'
 description = "Convert between various formats (YAML, JSON, XLSX, ODS, CSV) to Markdown Tables"
 authors = [{ name = 'Ramon Buckland', email = 'ramon@thebuckland.com' }]
