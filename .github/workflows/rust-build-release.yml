@@ -19,6 +19,9 @@ jobs:
           - os: macos-latest
             artifact_name: madato
             asset_name: madato-macos-amd64
+          - os: macos-14
+            artifact_name: madato
+            asset_name: madato-macos-arm64
     steps:
       - run: echo "🔎 branch is ${{ github.ref }}, repository is ${{ github.repository }}."
       - name: Check out repository code
