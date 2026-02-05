@@ -7,7 +7,7 @@ description = "A library and command line tool for reading and writing tabular d
 readme = "README.md"
 repository = "https://github.com/inosion/madato"
 keywords = ["markdown", "excel", "yaml", "csv", "json"]
-edition = "2021"
+edition = "2024"
 exclude = ["doc/*", "assets/*", "test/*"]
 
 [features]
