@@ -127,6 +127,28 @@ Madato expects that every column has a heading row. That is, the first row are h
 |                          20                          |    Rust    |+0.0 %|
 ```
 
+* Extract formulas instead of cell values
+
+```
+$ madato table --type xlsx test/sample_multi_sheet.xlsx --sheetname second_sheet --formulas
+|       Sample XLS Data Type        |                The Resulting Value                 |        Random Stuff        |        Heading 4         |
+|-----------------------------------|----------------------------------------------------|----------------------------|--------------------------|
+|               #REF!               |            This Cell<br/>Is multi-line             |>> Percentage (cell is 0.22)|           0.22           |
+|                B1                 |                       #REF!                        |                            |                          |
+|     >> Valid Reference (=B1)      |                The Resulting Value                 |            0/0             |                          |
+```
+
+* Show both values and formulas together
+
+```
+$ madato table --type xlsx test/sample_multi_sheet.xlsx --sheetname second_sheet --formula-with-value
+|       Sample XLS Data Type        |                The Resulting Value                 |        Random Stuff        |        Heading 4         |
+|-----------------------------------|----------------------------------------------------|----------------------------|--------------------------|
+|    >> Multiline<br/>fx: #REF!     |            This Cell<br/>Is multi-line             |>> Percentage (cell is 0.22)|           0.22           |
+|  >> Invalid Reference<br/>fx: B1  |                       #REF!                        |                            |                          |
+|     >> Valid Reference (=B1)      |                The Resulting Value                 |        <br/>fx: 0/0        |                          |
+```
+
 ## Internals
 madato uses:
 - [calamine](https://github.com/tafia/calamine) for reading XLS and ODS sheets
@@ -219,6 +241,8 @@ If you omit the sheet name, it will dump all sheets into an order map of array o
 * `[X]` Read an XLSX file and produce a Markdown Table
 * `[X]` Read an ODS file and produce a Markdown Table
 * `[X]` Read a CSV
+* `[X]` Extract formulas from spreadsheets instead of values
+* `[X]` Show both cell values and formulas together
 * `[X]` Published as a Python Module
 * `[ ]` TSV, PSV (etc) file and produce a Markdown Table
 * `[ ]` Support Nested Structures in the YAML input

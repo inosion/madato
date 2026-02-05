@@ -106,4 +106,10 @@ pub struct RenderOptions {
 
     /// When XLSX, ODS, the sheet name to use
     pub sheet_name: Option<String>,
+
+    /// Extract formulas instead of values
+    pub extract_formulas: bool,
+
+    /// Show both value and formula (VALUE<br/>fx: FORMULA)
+    pub show_formula_with_value: bool,
 }

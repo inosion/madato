@@ -19,7 +19,7 @@ madato utility - Tabular Data Helper
 SpreadSheet <--> YAML <--> JSON <--> Markdown
 
 Usage:
-  madato table -t <type> [-s <sheetname>] [-o <outputtype>] [-f <filters>...] [-c <column>...] <filename>
+  madato table -t <type> [-s <sheetname>] [-o <outputtype>] [-f <filters>...] [-c <column>...] [--formulas] [--formula-with-value] <filename>
   madato sheetlist <filename>
   madato (-h | --help)
   madato --version
@@ -35,6 +35,8 @@ Options:
   -o --outputtype <outputtype>  JSON, MD (Markdown), CSV or YAML. [default: MD]
   -f --filters <filters>        Filter data in the results based on a simple, key=value
   -c --columns <column>         List of Columns to output 'only'
+  --formulas                    Extract formulas instead of cell values (spreadsheets only)
+  --formula-with-value          Show both value and formula in format: VALUE<br/>fx: FORMULA
   -h --help                     Show this screen.
   --version                     Show version.
 
@@ -47,6 +49,8 @@ Quick examples
   madato table -t XLSX -o YAML --filters 'Col1=Year.* Col[4-9]=.*' workbook3.xlsx
   madato table -t XLSX -o CSV test/sample_multi_sheet.xlsx
   madato table -t CSV -o MD test/potatoes.csv
+  madato table -t XLSX -o MD --formulas workbook3.xlsx
+  madato table -t XLSX -o MD --formula-with-value workbook3.xlsx
 
   Filtering Example:
 
@@ -78,6 +82,8 @@ struct Args {
     flag_outputtype: OutputType,
     flag_filters: Vec<String>,
     flag_columns: Vec<String>,
+    flag_formulas: bool,
+    flag_formula_with_value: bool,
 }
 
 #[derive(Debug, Deserialize)]
@@ -145,6 +151,8 @@ fn main() -> Result<(), MadatoError> {
         headings: headings,
         sheet_name: args.flag_sheetname.clone(),
         filters: Some(filters),
+        extract_formulas: args.flag_formulas,
+        show_formula_with_value: args.flag_formula_with_value,
     });
 
     let output_string = match args.flag_outputtype {
@@ -159,15 +167,15 @@ fn main() -> Result<(), MadatoError> {
         },
         OutputType::YAML => mk_yaml_from_table_result(spreadsheet_to_named_table(
             args.arg_filename,
-            args.flag_sheetname,
+            &render_options,
         )),
         OutputType::JSON => mk_json_from_table_result(spreadsheet_to_named_table(
             args.arg_filename,
-            args.flag_sheetname,
+            &render_options,
         )),
         OutputType::CSV => mk_csv_from_table_result(spreadsheet_to_named_table(
             args.arg_filename,
-            args.flag_sheetname,
+            &render_options,
         )),
     };
 
