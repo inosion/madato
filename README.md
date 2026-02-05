@@ -40,7 +40,7 @@
 4. The full library is available as a python module, or a rust library.
 
 The tools is primarly centered around getting tabular data (spreadsheets, CSVs)
-into Markdown. 
+into Markdown.
 
 ## Usage
 ### CLI
@@ -56,7 +56,7 @@ madato = { version = "0", features = ["spreadsheets"] }
 
 ```
 
-### Python 
+### Python
 ```
 pip install madato
 ```
@@ -64,12 +64,13 @@ pip install madato
 ## Details
 
 When generating the output:
+- File type is automatically detected using magic numbers (file headers) - no need to specify `-t` in most cases
 - Filter the Rows using basic Regex over Key/Value pairs
 - Limit the columns to named headings
 - Re-order the columns, or repeat them using the same column feature
 - Only generate a table for a named "sheet" (applicable for the XLS/ODS formats)
 
-Madato is: 
+Madato is:
 - Command Line Tool (Windows, Mac, Linux) - good for CI/CD preprocessing
 - Rust Library - Good for integration into Rust Markdown tooling
 - Node JS WASM API - To be used later for Atom and VSCode Extensions
@@ -78,9 +79,9 @@ Madato expects that every column has a heading row. That is, the first row are h
 
 ### Example CLI usage
 
-* Extract the `3rd Sheet` sheet from an MS Excel Document
+* Extract the `3rd Sheet` sheet from an MS Excel Document (file type auto-detected)
 ```
-08:39 $ madato table --type xlsx test/sample_multi_sheet.xlsx --sheetname "3rd Sheet"
+08:39 $ madato table test/sample_multi_sheet.xlsx --sheetname "3rd Sheet"
 |col1|col2| col3 |col4 |                         col5                          |NULL5|
 |----|----|------|-----|-------------------------------------------------------|-----|
 | 1  |that| are  |wider|  value ‘aaa’ is in the next cell, but has no heading  | aaa |
@@ -89,7 +90,7 @@ Madato expects that every column has a heading row. That is, the first row are h
 
 * Extract and reorder just 3 Columns
 ```
-08:42 $ madato table --type xlsx test/sample_multi_sheet.xlsx --sheetname "3rd Sheet" -c col2 -c col3 -c NULL5
+08:42 $ madato table test/sample_multi_sheet.xlsx --sheetname "3rd Sheet" -c col2 -c col3 -c NULL5
 |col2| col3 |NULL5|
 |----|------|-----|
 |that| are  | aaa |
@@ -100,7 +101,7 @@ Madato expects that every column has a heading row. That is, the first row are h
 * Use a Filter, where `Heading 4` values must only have a letter or number.
 
 ```
-08:48 $ madato table --type xlsx test/sample_multi_sheet.xlsx --sheetname second_sheet -c "Heading 4" -f 'Heading 4=[a-zA-Z0-9]'
+08:48 $ madato table test/sample_multi_sheet.xlsx --sheetname second_sheet -c "Heading 4" -f 'Heading 4=[a-zA-Z0-9]'
 |        Heading 4         |
 |--------------------------|
 |         << empty         |
@@ -115,7 +116,7 @@ Madato expects that every column has a heading row. That is, the first row are h
 * Filtering on a Column, ensuring that a "+" is there in `Trend` Column
 
 ```
-09:00 $ madato table --type xlsx test/sample_multi_sheet.xlsx --sheetname Sheet1 -c Rank -c Language -c Trend -f "Trend=\+"
+09:00 $ madato table test/sample_multi_sheet.xlsx --sheetname Sheet1 -c Rank -c Language -c Trend -f "Trend=\+"
 |                         Rank                         |  Language  |Trend |
 |------------------------------------------------------|------------|------|
 |                          1                           |   Python   |+5.5 %|
@@ -130,7 +131,7 @@ Madato expects that every column has a heading row. That is, the first row are h
 * Extract formulas instead of cell values
 
 ```
-$ madato table --type xlsx test/sample_multi_sheet.xlsx --sheetname second_sheet --formulas
+$ madato table test/sample_multi_sheet.xlsx --sheetname second_sheet --formulas
 |       Sample XLS Data Type        |                The Resulting Value                 |        Random Stuff        |        Heading 4         |
 |-----------------------------------|----------------------------------------------------|----------------------------|--------------------------|
 |               #REF!               |            This Cell<br/>Is multi-line             |>> Percentage (cell is 0.22)|           0.22           |
@@ -141,7 +142,7 @@ $ madato table --type xlsx test/sample_multi_sheet.xlsx --sheetname second_sheet
 * Show both values and formulas together
 
 ```
-$ madato table --type xlsx test/sample_multi_sheet.xlsx --sheetname second_sheet --formula-with-value
+$ madato table test/sample_multi_sheet.xlsx --sheetname second_sheet --formula-with-value
 |       Sample XLS Data Type        |                The Resulting Value                 |        Random Stuff        |        Heading 4         |
 |-----------------------------------|----------------------------------------------------|----------------------------|--------------------------|
 |    >> Multiline<br/>fx: #REF!     |            This Cell<br/>Is multi-line             |>> Percentage (cell is 0.22)|           0.22           |
@@ -161,7 +162,7 @@ madato uses:
 * I have found that copying the "table" I want from a website: HTML, to a spreadsheet, then through `madato` gives an excellent Markdown table of the original.
 
 
-## Python 
+## Python
 
 ```python
 pip install madato
@@ -179,24 +180,22 @@ print(madato.spreadsheet_to_md(str(my_sample_spreadsheet)))
 
 ### Sheet List
 
-You can list the "sheets" of an XLS*, ODS file with 
+You can list the "sheets" of an XLS*, ODS file with
 
 ```
-$ madato sheetlist test/sample_multi_sheet.xlsx 
+$ madato sheetlist test/sample_multi_sheet.xlsx
 Sheet1
 second_sheet
 3rd Sheet
 ```
 
-### YAML to Markdown 
+### YAML to Markdown
 
-Madato reads a "YAML" file, in the same way it can a Spreadsheet.
+Madato reads a "YAML" file, in the same way it can a Spreadsheet (auto-detected).
 This is useful for "keeping" tabular data in your source repository, and perhaps not
 the XLS.
 
-`madato table -t yaml test/www-sample/test.yml`
-
-```
+`madato table test/www-sample/test.yml`
 |col3| col4  |  data1  |       data2        |
 |----|-------|---------|--------------------|
 |100 |gar gar|somevalue|someother value here|
@@ -208,10 +207,10 @@ the XLS.
 
 ### Excel/ODS to YAML
 
-Changing the output from default "Markdown (MD)" to "YAML", you get a Markdown file of the Spreadsheet.
+Changing the output from default "Markdown (MD)" to "YAML", you get a YAML file of the Spreadsheet.
 
 ```
-madato table -t xlsx test/sample_multi_sheet.xslx.xlsx -s Sheet1 -o yaml
+madato table test/sample_multi_sheet.xlsx -s Sheet1 -o yaml
 ---
 - Rank: "1"
   Change: ""
@@ -249,7 +248,7 @@ If you omit the sheet name, it will dump all sheets into an order map of array o
 * `[ ]` Read a Markdown File, and select the "table" and turn it back into YAML
 
 ## Future Goals
-* Finish the testing and publishing of the JS WASM Bindings. (PS - it works.. 
+* Finish the testing and publishing of the JS WASM Bindings. (PS - it works..
   (see : [test/www-sample](test/www-sample) and the [Makefile](Makefile) )
 * Embed the "importing" of YAML, CSV and XLS* files into the `mume` Markdown Preview Enhanced Plugin. [https://shd101wyy.github.io/markdown-preview-enhanced/](https://shd101wyy.github.io/markdown-preview-enhanced/) So we can have Awesome Markdown Documents.
 * Provide a `PreRenderer` for `[rust-lang-nursery/mdBook](https://github.com/rust-lang-nursery/mdBook) to "import" MD tables from files.
